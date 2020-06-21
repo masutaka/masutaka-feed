@@ -11,12 +11,13 @@ exports.handler = (event, context, callback) => {
   twitter_client.post(
     "statuses/update",
     {
-      status: "この 3 ヶ月でどれだけの炭酸水を飲んだだろう "
+      status: "この 3 ヶ月でどれだけの炭酸水を飲んだだろう"
     },
     (error, tweet, response) => {
       if(error) {
         callback(null, "Twitter bot error.");
       }
       callback(null, "Twitter bot end.");
-    });
+    }
+  );
 };
