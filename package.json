@@ -9,6 +9,7 @@
   "author": "masutaka",
   "license": "ISC",
   "dependencies": {
+    "pushover-notifications": "^1.2.2",
     "twitter": "^1.7.1"
   }
 }
