@@ -1,72 +1,113 @@
-console.log("Loading function");
+console.info("Loading function");
 
-const twitter = require("twitter");
+const MY_ACCESS_TOKEN = process.env.MY_ACCESS_TOKEN;
 
-const twitter_client = new twitter({
+const Twitter = require("twitter");
+const TwitterClient = new Twitter({
   consumer_key: process.env.TWITTER_API_KEY,
   consumer_secret: process.env.TWITTER_API_SECRET_KEY,
   access_token_key: process.env.TWITTER_ACCESS_TOKEN,
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
+const Pushover = require("pushover-notifications");
+const PushoverClient = new Pushover({
+  user: process.env.PUSHOVER_USER_KEY,
+  token: process.env.PUSHOVER_APP_TOKEN,
+});
+
 const GITHUB_TITLE_IGNORE_REGEXP = /(feedforce|vim|kristofferahl|dependabot-preview)/;
 const GITHUB_TITLE_PUSHOVER_REGEXP = /masutaka/;
 
 exports.handler = (event, context, callback) => {
-  console.log("event ->", JSON.stringify(event));
-  console.log("context ->", JSON.stringify(context));
-  console.log("callback ->", JSON.stringify(callback));
-
   const eventBody = JSON.parse(event.body);
 
-  if (eventBody.accessToken != process.env.MY_ACCESS_TOKEN) {
-    console.log(`Invalid token ${eventBody.accessToken}`);
-    return;
-  }
-
-  // TODO: Lambda function を 2 つに分ける（masutaka-feed-hatebu & masutaka-feed-github）
   switch (eventBody.type) {
   case "hatebu":
-    tweet({
-      status: `[B!] ${eventBody.entryAuthor} > ${eventBody.entryTitle} ${eventBody.entryUrl}`,
-      callback: callback,
-    });
+    hatebu(event, context, callback);
     break;
   case "github":
-    if (GITHUB_TITLE_IGNORE_REGEXP.test(eventBody.entryTitle)) {
-      console.log(`[GH] Ignore "${eventBody.entryTitle}"`);
-      break;
-    }
-
-    tweet({
-      status: `[GH] ${eventBody.entryTitle} ${eventBody.entryUrl}`,
-      callback: callback,
-    });
-
-    if (GITHUB_TITLE_PUSHOVER_REGEXP.test(eventBody.entryTitle)) {
-      // TODO: masutaka にマッチしたら Pushover に送信
-      console.log(`[GH] Pushover "${eventBody.entryTitle}"`);
-    }
+    github(event, context, callback);
     break;
   default:
-    console.log(`Unsupported type ${eventBody.type}`);
+    console.error(`Unsupported type ${eventBody.type}`);
     break;
   }
 };
 
-const tweet = ({status = null, callback = null}) => {
-  twitter_client.post(
-    "statuses/update",
-    { status: status },
-    (error, tweet, response) => {
-      if(error) {
-        console.log("[Error] error ->", JSON.stringify(error));
-        console.log("[Error] tweet ->", JSON.stringify(tweet));
-        console.log("[Error] response ->", JSON.stringify(response));
-        callback(null, "Failed to tweet...");
-      }
-      console.log(`tweet -> ${status}`);
+const hatebu = (event, context, callback) => {
+  console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
+  console.log("context ->", JSON.stringify(context));
+
+  const eventBody = JSON.parse(event.body);
+
+  if (eventBody.accessToken != MY_ACCESS_TOKEN) {
+    console.error(`Invalid token ${eventBody.accessToken}`);
+    return;
+  }
+
+  hatebuTweet({
+    status: `[B!] ${eventBody.entryAuthor} > ${eventBody.entryTitle} ${eventBody.entryUrl}`,
+    callback: callback,
+  });
+};
+
+const hatebuTweet = ({status = null, callback = null}) => {
+  TwitterClient.post("statuses/update", { status: status })
+    .then((response) => {
+      console.info("response ->", JSON.stringify(response));
       callback(null, "Just tweeted!");
-    }
-  );
+    })
+    .catch((error) => {
+      console.error("error ->", JSON.stringify(error));
+      callback(null, "Failed to tweet...");
+    });
+};
+
+const github = (event, context, callback) => {
+  console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
+  console.log("context ->", JSON.stringify(context));
+
+  const eventBody = JSON.parse(event.body);
+
+  if (eventBody.accessToken != MY_ACCESS_TOKEN) {
+    console.error(`Invalid token ${eventBody.accessToken}`);
+    return;
+  }
+
+  if (GITHUB_TITLE_IGNORE_REGEXP.test(eventBody.entryTitle)) {
+    console.info(`[GH] Ignore "${eventBody.entryTitle}"`);
+    return;
+  }
+
+  Promise.all([githubTweet(eventBody), sendPushover(eventBody)])
+    .then(([twitter, pushover]) => {
+      console.info("[Twitter] response ->", JSON.stringify(twitter));
+      console.info("[Pushover] response ->", JSON.stringify(pushover));
+      callback(null, "Just tweeted and pushovered!");
+    })
+    .catch(([twitter, pushover]) => {
+      console.info("[Twitter] error ->", JSON.stringify(twitter));
+      console.info("[Pushover] error ->", JSON.stringify(pushover));
+      callback(null, "Failed to tweet or pushover...");
+    });
+};
+
+const githubTweet = (eventBody) => {
+  return TwitterClient.post("statuses/update", {
+    status: `[GH] ${eventBody.entryTitle} ${eventBody.entryUrl}`,
+  });
+};
+
+const sendPushover = (eventBody) => {
+  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(eventBody.entryTitle)) {
+    return PushoverClient.send({
+      title: eventBody.entryTitle,
+      message: eventBody.entryUrl, // required
+      device: "iPhone",
+      priority: 0,                 // normal
+    });
+  }
+
+  return `Doesn't send to pushover because the entryTitle "${eventBody.entryTitle}" doesnot matched with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
