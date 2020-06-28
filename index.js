@@ -112,5 +112,5 @@ const sendPushover = (eventBody) => {
     });
   }
 
-  return `Doesn't send to pushover because the entryTitle "${title}" doesnot matched with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
+  return `Doesn't send to pushover because the entryTitle "${title}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
