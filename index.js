@@ -16,7 +16,7 @@ const PushoverClient = new Pushover({
   token: process.env.PUSHOVER_APP_TOKEN,
 });
 
-const GITHUB_TITLE_IGNORE_REGEXP = /(feedforce|vim|kristofferahl|dependabot-preview)/;
+const GITHUB_TITLE_IGNORE_REGEXP = /feedforce/;
 const GITHUB_TITLE_PUSHOVER_REGEXP = /masutaka/;
 
 exports.handler = (event, context, callback) => {
@@ -84,7 +84,7 @@ const github = (event, context, callback) => {
     .then(([twitter, pushover]) => {
       console.info("[Twitter] response ->", JSON.stringify(twitter));
       console.info("[Pushover] response ->", JSON.stringify(pushover));
-      callback(null, "Just tweeted and pushovered!");
+      callback(null, "Just tweeted or pushovered!");
     })
     .catch(([twitter, pushover]) => {
       console.info("[Twitter] error ->", JSON.stringify(twitter));
@@ -100,14 +100,17 @@ const githubTweet = (eventBody) => {
 };
 
 const sendPushover = (eventBody) => {
-  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(eventBody.entryTitle)) {
+  const title = eventBody.entryTitle;
+  const message = eventBody.entryUrl;
+
+  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(title)) {
     return PushoverClient.send({
-      title: eventBody.entryTitle,
-      message: eventBody.entryUrl, // required
+      title: title,
+      message: message, // required
       device: "iPhone",
-      priority: 0,                 // normal
+      priority: 0,      // normal
     });
   }
 
-  return `Doesn't send to pushover because the entryTitle "${eventBody.entryTitle}" doesnot matched with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
+  return `Doesn't send to pushover because the entryTitle "${title}" doesnot matched with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
