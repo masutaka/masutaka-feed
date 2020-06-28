@@ -1,0 +1,23 @@
+env:
+  es6: true
+  node: true
+extends: 'eslint:recommended'
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+  exports: readonly
+  process: readonly
+  require: readonly
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+rules:
+  indent:
+    - error
+    - 2
+  quotes:
+    - error
+    - double
+  semi:
+    - error
+    - always
