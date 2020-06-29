@@ -95,27 +95,13 @@ const github = (event, context, callback) => {
 
 const githubTweet = (eventBody) => {
   return TwitterClient.post("statuses/update", {
-    status: `[GH] ${getTweetTitle(eventBody)} ${getTweetMessage(eventBody)}`,
+    status: `[GH] ${getTitle(eventBody)} ${getMessage(eventBody)}`,
   });
 };
 
-const getTweetTitle = (eventBody) => {
-  return eventBody.entryTitle;
-};
-
-const getTweetMessage = (eventBody) => {
-  const found = eventBody.entryTitle.match(/^([^ ]+) started following/);
-
-  if (found) {
-    return `https://github.com/${found[1]}`;
-  }
-
-  return eventBody.entryUrl;
-};
-
 const sendPushover = (eventBody) => {
-  const title = getPushoverTitle(eventBody);
-  const message = getPushoverMessage(eventBody);
+  const title = getTitle(eventBody);
+  const message = getMessage(eventBody);
 
   if (GITHUB_TITLE_PUSHOVER_REGEXP.test(title)) {
     return PushoverClient.send({
@@ -129,11 +115,11 @@ const sendPushover = (eventBody) => {
   return `Doesn't send to pushover because the entryTitle "${title}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
 
-const getPushoverTitle = (eventBody) => {
+const getTitle = (eventBody) => {
   return eventBody.entryTitle;
 };
 
-const getPushoverMessage = (eventBody) => {
+const getMessage = (eventBody) => {
   const found = eventBody.entryTitle.match(/^([^ ]+) started following/);
 
   if (found) {
