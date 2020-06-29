@@ -95,8 +95,22 @@ const github = (event, context, callback) => {
 
 const githubTweet = (eventBody) => {
   return TwitterClient.post("statuses/update", {
-    status: `[GH] ${eventBody.entryTitle} ${eventBody.entryUrl}`,
+    status: `[GH] ${getTweetTitle(eventBody)} ${getTweetMessage(eventBody)}`,
   });
+};
+
+const getTweetTitle = (eventBody) => {
+  return eventBody.entryTitle;
+};
+
+const getTweetMessage = (eventBody) => {
+  const found = eventBody.entryTitle.match(/^([^ ]+) started following/);
+
+  if (found) {
+    return `https://github.com/${found[1]}`;
+  }
+
+  return eventBody.entryUrl;
 };
 
 const sendPushover = (eventBody) => {
