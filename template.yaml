@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Managed by AWS SAM
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Handler: index.handler
+    Runtime: nodejs12.x
+
+Resources:
+  GithubFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: github/
+      Description: Managed by AWS SAM
+      Events:
+        Github:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /github
+            Method: post
+      Environment:
+        Variables:
+          MY_ACCESS_TOKEN: !Ref GithubMyAccessToken
+          PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
+          PUSHOVER_USER_KEY: !Ref PushoverUserKey
+          TWITTER_ACCESS_TOKEN: !Ref TwitterAccessToken
+          TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
+          TWITTER_API_KEY: !Ref TwitterApiKey
+          TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+  HatebuFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hatebu/
+      Description: Managed by AWS SAM
+      Events:
+        Hatebu:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hatebu
+            Method: post
+      Environment:
+        Variables:
+          MY_ACCESS_TOKEN: !Ref HatebuMyAccessToken
+          PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
+          PUSHOVER_USER_KEY: !Ref PushoverUserKey
+          TWITTER_ACCESS_TOKEN: !Ref TwitterAccessToken
+          TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
+          TWITTER_API_KEY: !Ref TwitterApiKey
+          TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+
+Parameters:
+  GithubMyAccessToken:
+    Type: String
+  HatebuMyAccessToken:
+    Type: String
+  PushoverAppToken:
+    Type: String
+  PushoverUserKey:
+    Type: String
+  TwitterAccessToken:
+    Type: String
+  TwitterAccessTokenSecret:
+    Type: String
+  TwitterApiKey:
+    Type: String
+  TwitterApiSecretKey:
+    Type: String
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  GithubApi:
+    Description: "API Gateway endpoint URL for Prod stage for Github function"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/github/"
+  GithubFunction:
+    Description: "Github Lambda Function ARN"
+    Value: !GetAtt GithubFunction.Arn
+  GithubFunctionIamRole:
+    Description: "Implicit IAM Role created for Github function"
+    Value: !GetAtt GithubFunctionRole.Arn
+  HatebuApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hatebu function"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hatebu/"
+  HatebuFunction:
+    Description: "Hatebu Lambda Function ARN"
+    Value: !GetAtt HatebuFunction.Arn
+  HatebuFunctionIamRole:
+    Description: "Implicit IAM Role created for Hatebu function"
+    Value: !GetAtt HatebuFunctionRole.Arn

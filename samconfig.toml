@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "masutaka-feed"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-494o19nbkn1d"
+s3_prefix = "masutaka-feed"
+region = "ap-northeast-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "GithubMyAccessToken=\"\" HatebuMyAccessToken=\"\" PushoverAppToken=\"\" PushoverUserKey=\"\" TwitterAccessToken=\"\" TwitterAccessTokenSecret=\"\" TwitterApiKey=\"\" TwitterApiSecretKey=\"\""
