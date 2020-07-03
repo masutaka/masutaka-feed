@@ -73,8 +73,8 @@ Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   GithubApi:
-    Description: "API Gateway endpoint URL for Prod stage for Github function"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/github/"
+    Description: "API Gateway endpoint URL for Github function"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/github/"
   GithubFunction:
     Description: "Github Lambda Function ARN"
     Value: !GetAtt GithubFunction.Arn
@@ -82,8 +82,8 @@ Outputs:
     Description: "Implicit IAM Role created for Github function"
     Value: !GetAtt GithubFunctionRole.Arn
   HatebuApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hatebu function"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hatebu/"
+    Description: "API Gateway endpoint URL for Hatebu function"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/hatebu/"
   HatebuFunction:
     Description: "Hatebu Lambda Function ARN"
     Value: !GetAtt HatebuFunction.Arn
