@@ -49,6 +49,42 @@ Resources:
           TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
           TWITTER_API_KEY: !Ref TwitterApiKey
           TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+  GithubFunctionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in masutaka-feed-GithubFunction
+      AlarmName: masutaka-feed-GithubFunction-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GithubFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 900 # 15 minutes
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+  HatebuFunctionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in masutaka-feed-HatebuFunction
+      AlarmName: masutaka-feed-HatebuFunction-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 900 # 15 minutes
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
 
 Parameters:
   GithubMyAccessToken:
