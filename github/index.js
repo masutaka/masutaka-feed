@@ -70,7 +70,7 @@ const sendPushover = (eventBody) => {
     return PushoverClient.send({
       title: title,
       message: message, // required
-      device: "iPhone",
+      device: "Android",
       priority: 0,      // normal
     });
   }
