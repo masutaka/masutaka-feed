@@ -5,8 +5,8 @@
 ### github/
 
 ```
-GitHub private feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -> Twitter
-                                                                 -> Pushover
+GitHub private feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -(filter)-> Twitter
+                                                                 -(filter)-> Pushover
 ```
 
 ### hatebu/
