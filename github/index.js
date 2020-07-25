@@ -31,19 +31,31 @@ exports.handler = (event, context, callback) => {
   console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
   console.log("context ->", JSON.stringify(context));
 
-  const eventBody = JSON.parse(event.body);
+  // eventBody is string which is the following format.
+  //
+  // accessToken: {{AccessToken}}
+  // entryTitle: {{EntryTitle}}
+  // entryUrl: {{EntryUrl}}
+  const eventBody = event.body;
 
-  if (eventBody.accessToken != MY_ACCESS_TOKEN) {
-    console.error(`Invalid token ${eventBody.accessToken}`);
+  const accessToken = getAccessToken(eventBody);
+  if (accessToken != MY_ACCESS_TOKEN) {
+    console.error(`Invalid token ${accessToken}`);
     return;
   }
 
-  if (GITHUB_TITLE_IGNORE_REGEXP.test(eventBody.entryTitle)) {
-    console.info(`[GH] Ignore "${eventBody.entryTitle}"`);
+  const entryTitle = getEntryTitle(eventBody);
+  console.log(`entryTitle: ${entryTitle}`);
+
+  if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
+    console.info(`[GH] Ignore "${entryTitle}"`);
     return;
   }
 
-  Promise.all([githubTweet(eventBody), sendPushover(eventBody)])
+  const entryUrl = getEntryUrl(eventBody);
+  console.log(`entryUrl: ${entryUrl}`);
+
+  Promise.all([githubTweet(entryTitle, entryUrl), sendPushover(entryTitle, entryUrl)])
     .then(([twitter, pushover]) => {
       console.info("[Twitter] response ->", JSON.stringify(twitter));
       console.info("[Pushover] response ->", JSON.stringify(pushover));
@@ -56,38 +68,45 @@ exports.handler = (event, context, callback) => {
     });
 };
 
-const githubTweet = (eventBody) => {
+const getAccessToken = (eventBody) => {
+  return eventBody.match(/^accessToken: (.+)/)[1];
+};
+
+const getEntryTitle = (eventBody) => {
+  return eventBody.match(/\nentryTitle: (.+)/)[1];
+};
+
+const getEntryUrl = (eventBody) => {
+  return eventBody.match(/\nentryUrl: (.+)/)[1];
+};
+
+const githubTweet = (entryTitle, entryUrl) => {
   return TwitterClient.post("statuses/update", {
-    status: `[GH] ${getTitle(eventBody)} ${getMessage(eventBody)}`,
+    status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
   });
 };
 
-const sendPushover = (eventBody) => {
-  const title = getTitle(eventBody);
-  const message = getMessage(eventBody);
+const sendPushover = (entryTitle, entryUrl) => {
+  const message = getMessage(entryTitle, entryUrl);
 
-  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(title)) {
+  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
     return PushoverClient.send({
-      title: title,
+      title: entryTitle,
       message: message, // required
       device: "Android",
       priority: 0,      // normal
     });
   }
 
-  return `Doesn't send to pushover because the entryTitle "${title}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
+  return `Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
 
-const getTitle = (eventBody) => {
-  return eventBody.entryTitle;
-};
-
-const getMessage = (eventBody) => {
-  const found = eventBody.entryTitle.match(/^([^ ]+) started following/);
+const getMessage = (entryTitle, entryUrl) => {
+  const found = entryTitle.match(/^([^ ]+) started following/);
 
   if (found) {
     return `https://github.com/${found[1]}`;
   }
 
-  return eventBody.entryUrl;
+  return entryUrl;
 };
