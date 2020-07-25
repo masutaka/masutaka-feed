@@ -19,15 +19,31 @@ exports.handler = (event, context, callback) => {
   console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
   console.log("context ->", JSON.stringify(context));
 
-  const eventBody = JSON.parse(event.body);
+  // eventBody is string which is the following format.
+  //
+  // accessToken: {{AccessToken}}
+  // entryAuthor: {{EntryAuthor}}
+  // entryTitle: {{EntryTitle}}
+  // entryUrl: {{EntryUrl}}
+  const eventBody = event.body;
 
-  if (eventBody.accessToken != MY_ACCESS_TOKEN) {
-    console.error(`Invalid token ${eventBody.accessToken}`);
+  const accessToken = getAccessToken(eventBody);
+  if (accessToken != MY_ACCESS_TOKEN) {
+    console.error(`Invalid token ${accessToken}`);
     return;
   }
 
+  const entryAuthor = getEntryAuthor(eventBody);
+  console.log(`entryAuthor: ${entryAuthor}`);
+
+  const entryTitle = getEntryTitle(eventBody);
+  console.log(`entryTitle: ${entryTitle}`);
+
+  const entryUrl = getEntryUrl(eventBody);
+  console.log(`entryUrl: ${entryUrl}`);
+
   TwitterClient.post("statuses/update", {
-    status: `[B!] ${eventBody.entryAuthor} > ${eventBody.entryTitle} ${eventBody.entryUrl}`,
+    status: `[B!] ${entryAuthor} > ${entryTitle} ${entryUrl}`,
   }).then((response) => {
     console.info("response ->", JSON.stringify(response));
     callback(null, "Just tweeted!");
@@ -35,4 +51,20 @@ exports.handler = (event, context, callback) => {
     console.error("error ->", JSON.stringify(error));
     callback(null, "Failed to tweet...");
   });
+};
+
+const getAccessToken = (eventBody) => {
+  return eventBody.match(/^accessToken: (.+)/)[1];
+};
+
+const getEntryAuthor = (eventBody) => {
+  return eventBody.match(/\nentryAuthor: (.+)/)[1];
+};
+
+const getEntryTitle = (eventBody) => {
+  return eventBody.match(/\nentryTitle: (.+)/)[1];
+};
+
+const getEntryUrl = (eventBody) => {
+  return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
