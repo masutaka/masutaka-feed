@@ -25,6 +25,7 @@ exports.handler = (event, context, callback) => {
   // entryAuthor: {{EntryAuthor}}
   // entryTitle: {{EntryTitle}}
   // entryUrl: {{EntryUrl}}
+  // entryContent: {{EntryContent}}
   const eventBody = event.body;
 
   const accessToken = getAccessToken(eventBody);
@@ -42,8 +43,11 @@ exports.handler = (event, context, callback) => {
   const entryUrl = getEntryUrl(eventBody);
   console.log(`entryUrl: ${entryUrl}`);
 
+  const hatebuComment = getHatebuComment(eventBody);
+  console.log(`hatebuComment: ${hatebuComment}`);
+
   TwitterClient.post("statuses/update", {
-    status: `[B!] ${entryAuthor} > ${entryTitle} ${entryUrl}`,
+    status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`,
   }).then((response) => {
     console.info("response ->", JSON.stringify(response));
     callback(null, "Just tweeted!");
@@ -67,4 +71,19 @@ const getEntryTitle = (eventBody) => {
 
 const getEntryUrl = (eventBody) => {
   return eventBody.match(/\nentryUrl: (.+)/)[1];
+};
+
+const getEntryContent = (eventBody) => {
+  return eventBody.match(/\nentryContent: (.+)/)[1];
+};
+
+const getHatebuComment = (eventBody) => {
+  const entryContent = getEntryContent(eventBody);
+  console.log(`entryContent: ${entryContent}`);
+
+  if (/<\/a> <\/p>$/.test(entryContent)) {
+    return "";
+  }
+
+  return entryContent.match(/<\/a> (.+)<\/p>$/)[1];
 };
