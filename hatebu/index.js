@@ -74,7 +74,8 @@ const getEntryUrl = (eventBody) => {
 };
 
 const getEntryContent = (eventBody) => {
-  return eventBody.match(/\nentryContent: (.+)/)[1];
+  // entryContent may contain line breaks.
+  return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "");
 };
 
 const getHatebuComment = (eventBody) => {
