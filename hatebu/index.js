@@ -47,7 +47,7 @@ exports.handler = (event, context, callback) => {
   console.log(`hatebuComment: ${hatebuComment}`);
 
   TwitterClient.post("statuses/update", {
-    status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`,
+    status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, " "),
   }).then((response) => {
     console.info("response ->", JSON.stringify(response));
     callback(null, "Just tweeted!");
