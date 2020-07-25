@@ -73,17 +73,11 @@ const getAccessToken = (eventBody) => {
 };
 
 const getEntryTitle = (eventBody) => {
-  return getEntrySafely(eventBody, "entryTitle");
+  return eventBody.match(/\nentryTitle: (.+)/)[1];
 };
 
 const getEntryUrl = (eventBody) => {
-  return getEntrySafely(eventBody, "entryUrl");
-};
-
-const getEntrySafely = (eventBody, key) => {
-  // It may contain line breaks.
-  const regexp = new RegExp(`\n${key}: (.+)`, "s");
-  return eventBody.match(regexp)[1].replace(/\n/g, "");
+  return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
 
 const githubTweet = (entryTitle, entryUrl) => {
