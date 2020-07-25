@@ -62,20 +62,25 @@ const getAccessToken = (eventBody) => {
 };
 
 const getEntryAuthor = (eventBody) => {
-  return eventBody.match(/\nentryAuthor: (.+)/)[1];
+  return getEntrySafely(eventBody, "entryAuthor");
 };
 
 const getEntryTitle = (eventBody) => {
-  return eventBody.match(/\nentryTitle: (.+)/)[1];
+  return getEntrySafely(eventBody, "entryTitle");
 };
 
 const getEntryUrl = (eventBody) => {
-  return eventBody.match(/\nentryUrl: (.+)/)[1];
+  return getEntrySafely(eventBody, "entryUrl");
 };
 
 const getEntryContent = (eventBody) => {
-  // entryContent may contain line breaks.
-  return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "");
+  return getEntrySafely(eventBody, "entryContent");
+};
+
+const getEntrySafely = (eventBody, key) => {
+  // It may contain line breaks.
+  const regexp = new RegExp(`\n${key}: (.+)`, "s");
+  return eventBody.match(regexp)[1].replace(/\n/g, "");
 };
 
 const getHatebuComment = (eventBody) => {
