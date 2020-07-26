@@ -19,9 +19,9 @@ deploy: build
 		TwitterApiKey=$$TWITTER_API_KEY \
 		TwitterApiSecretKey=$$TWITTER_API_SECRET_KEY
 
-.PHONY: destroy
-destroy:
-	@$(AWS) cloudformation delete-stack --stack-name $(STACK_NAME)
+# .PHONY: destroy
+# destroy:
+# 	@$(AWS) cloudformation delete-stack --stack-name $(STACK_NAME)
 
 .PHONY: github
 github:
