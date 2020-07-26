@@ -21,11 +21,11 @@ exports.handler = (event, context, callback) => {
 
   // eventBody is string which is the following format.
   //
-  // accessToken: {{AccessToken}}
+  // accessToken: {{AccessToken}}  # <= It should be first
   // entryAuthor: {{EntryAuthor}}
   // entryTitle: {{EntryTitle}}
   // entryUrl: {{EntryUrl}}
-  // entryContent: {{EntryContent}}
+  // entryContent: {{EntryContent}} # <= It should be last
   const eventBody = event.body;
 
   const accessToken = getAccessToken(eventBody);
