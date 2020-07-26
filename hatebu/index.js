@@ -75,7 +75,14 @@ const getEntryUrl = (eventBody) => {
 
 const getEntryContent = (eventBody) => {
   // entryContent may contain line breaks.
-  return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "");
+  return eventBody.match(/\nentryContent: (.+)/s)[1]
+    .replace(/\n/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
 };
 
 const getHatebuComment = (eventBody) => {
