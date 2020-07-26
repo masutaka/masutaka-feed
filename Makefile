@@ -1,12 +1,15 @@
+AWS := aws
+MAKE := make
+SAM := sam
 STACK_NAME := masutaka-feed
 
 .PHONY: build
-build:
-	@sam build
+build: github hatebu
+	@$(SAM) build
 
 .PHONY: deploy
 deploy: build
-	@sam deploy --parameter-overrides \
+	@$(SAM) deploy --parameter-overrides \
 		GithubMyAccessToken=$$GITHUB_MY_ACCESS_TOKEN \
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
@@ -18,4 +21,12 @@ deploy: build
 
 .PHONY: destroy
 destroy:
-	@aws cloudformation delete-stack --stack-name $(STACK_NAME)
+	@$(AWS) cloudformation delete-stack --stack-name $(STACK_NAME)
+
+.PHONY: github
+github:
+	@$(MAKE) -w -C github
+
+.PHONY: hatebu
+hatebu:
+	@$(MAKE) -w -C hatebu
