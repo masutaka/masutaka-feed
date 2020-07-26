@@ -86,5 +86,5 @@ const getHatebuComment = (eventBody) => {
     return "";
   }
 
-  return entryContent.match(/<\/a> (.+)<\/p>$/)[1];
+  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1];
 };
