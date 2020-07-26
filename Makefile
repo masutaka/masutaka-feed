@@ -9,7 +9,7 @@ build: github hatebu
 
 .PHONY: deploy
 deploy: build
-	@$(SAM) deploy --parameter-overrides \
+	@$(SAM) deploy --no-confirm-changeset --parameter-overrides \
 		GithubMyAccessToken=$$GITHUB_MY_ACCESS_TOKEN \
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
