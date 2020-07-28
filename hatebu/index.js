@@ -75,14 +75,8 @@ const getEntryUrl = (eventBody) => {
 
 const getEntryContent = (eventBody) => {
   // entryContent may contain line breaks.
-  return eventBody.match(/\nentryContent: (.+)/s)[1]
-    .replace(/\n/g, "")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ");
+  return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "")
+  ;
 };
 
 const getHatebuComment = (eventBody) => {
@@ -93,5 +87,11 @@ const getHatebuComment = (eventBody) => {
     return "";
   }
 
-  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1];
+  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
 };
