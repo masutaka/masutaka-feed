@@ -87,11 +87,14 @@ const getHatebuComment = (eventBody) => {
     return "";
   }
 
-  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
+  const escaped = entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, "\"")
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ");
+
+  // Roughly truncate
+  return escaped.substr(0, 80);
 };
