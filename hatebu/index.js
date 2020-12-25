@@ -66,7 +66,10 @@ const getEntryAuthor = (eventBody) => {
 };
 
 const getEntryTitle = (eventBody) => {
-  return eventBody.match(/\nentryTitle: (.+)/)[1];
+  const entryTitle = eventBody.match(/\nentryTitle: (.+)/)[1];
+
+  // Roughly truncate
+  return entryTitle.substr(0, 80);
 };
 
 const getEntryUrl = (eventBody) => {
