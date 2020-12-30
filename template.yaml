@@ -49,6 +49,7 @@ Resources:
           TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
           TWITTER_API_KEY: !Ref TwitterApiKey
           TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+      Timeout: 10 # seconds (default: 3)
   GithubFunctionAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
