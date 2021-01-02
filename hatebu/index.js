@@ -99,5 +99,5 @@ const getHatebuComment = (eventBody) => {
     .replace(/&nbsp;/g, " ");
 
   // Roughly truncate
-  return escaped.substr(0, 80);
+  return escaped.substr(0, 70);
 };
