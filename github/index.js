@@ -95,6 +95,7 @@ const sendPushover = (entryTitle, entryUrl) => {
       message: message, // required
       device: "Android",
       priority: 0,      // normal
+      sound: "gamelan",
     });
   }
 
