@@ -24,7 +24,7 @@ const PushoverClient = new Pushover({
   token: PUSHOVER_APP_TOKEN,
 });
 
-const GITHUB_TITLE_IGNORE_REGEXP = /(feedforce|dependabot)/;
+const GITHUB_TITLE_IGNORE_REGEXP = /dependabot/;
 const GITHUB_TITLE_PUSHOVER_REGEXP = /masutaka/;
 
 exports.handler = (event, context, callback) => {
