@@ -25,10 +25,8 @@ Resources:
           MY_ACCESS_TOKEN: !Ref GithubMyAccessToken
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
-          TWITTER_ACCESS_TOKEN: !Ref TwitterAccessToken
-          TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
-          TWITTER_API_KEY: !Ref TwitterApiKey
-          TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+          MASTODON_URL: !Ref MastodonUrl
+          MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
   HatebuFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -45,10 +43,8 @@ Resources:
           MY_ACCESS_TOKEN: !Ref HatebuMyAccessToken
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
-          TWITTER_ACCESS_TOKEN: !Ref TwitterAccessToken
-          TWITTER_ACCESS_TOKEN_SECRET: !Ref TwitterAccessTokenSecret
-          TWITTER_API_KEY: !Ref TwitterApiKey
-          TWITTER_API_SECRET_KEY: !Ref TwitterApiSecretKey
+          MASTODON_URL: !Ref MastodonUrl
+          MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
       Timeout: 180 # seconds (default: 3)
   GithubFunctionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -96,13 +92,9 @@ Parameters:
     Type: String
   PushoverUserKey:
     Type: String
-  TwitterAccessToken:
+  MastodonUrl:
     Type: String
-  TwitterAccessTokenSecret:
-    Type: String
-  TwitterApiKey:
-    Type: String
-  TwitterApiSecretKey:
+  MastodonAccessToken:
     Type: String
 
 Outputs:
