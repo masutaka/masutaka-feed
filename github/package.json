@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "masto": "^5.11.3",
-    "pushover-notifications": "^1.2.2",
-    "twitter": "^1.7.1"
+    "pushover-notifications": "^1.2.2"
   }
 }
