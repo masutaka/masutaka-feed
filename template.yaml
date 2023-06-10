@@ -27,6 +27,7 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
+      Timeout: 180 # seconds (default: 3)
   HatebuFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
