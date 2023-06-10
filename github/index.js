@@ -2,21 +2,11 @@ console.info("Loading function");
 
 const MY_ACCESS_TOKEN = process.env.MY_ACCESS_TOKEN;
 
-const TWITTER_API_KEY = process.env.TWITTER_API_KEY;
-const TWITTER_API_SECRET_KEY = process.env.TWITTER_API_SECRET_KEY;
-const TWITTER_ACCESS_TOKEN = process.env.TWITTER_ACCESS_TOKEN;
-const TWITTER_ACCESS_TOKEN_SECRET = process.env.TWITTER_ACCESS_TOKEN_SECRET;
+const MASTODON_URL = process.env.MASTODON_URL;
+const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN;
 
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN;
-
-const Twitter = require("twitter");
-const TwitterClient = new Twitter({
-  consumer_key: TWITTER_API_KEY,
-  consumer_secret: TWITTER_API_SECRET_KEY,
-  access_token_key: TWITTER_ACCESS_TOKEN,
-  access_token_secret: TWITTER_ACCESS_TOKEN_SECRET,
-});
 
 const Pushover = require("pushover-notifications");
 const PushoverClient = new Pushover({
@@ -55,16 +45,16 @@ exports.handler = (event, context, callback) => {
   const entryUrl = getEntryUrl(eventBody);
   console.log(`entryUrl: ${entryUrl}`);
 
-  Promise.all([githubTweet(entryTitle, entryUrl), sendPushover(entryTitle, entryUrl)])
-    .then(([twitter, pushover]) => {
-      console.info("[Twitter] response ->", JSON.stringify(twitter));
+  Promise.all([postToMastodon(entryTitle, entryUrl), sendPushover(entryTitle, entryUrl)])
+    .then(([mastodon, pushover]) => {
+      console.info("[Mastodon] response ->", JSON.stringify(mastodon));
       console.info("[Pushover] response ->", JSON.stringify(pushover));
-      callback(null, "Just tweeted or pushovered!");
+      callback(null, "Just posted or pushovered!");
     })
-    .catch(([twitter, pushover]) => {
-      console.info("[Twitter] error ->", JSON.stringify(twitter));
+    .catch(([mastodon, pushover]) => {
+      console.info("[Mastodon] error ->", JSON.stringify(mastodon));
       console.info("[Pushover] error ->", JSON.stringify(pushover));
-      callback(null, "Failed to tweet or pushover...");
+      callback(null, "Failed to post or pushover...");
     });
 };
 
@@ -80,10 +70,18 @@ const getEntryUrl = (eventBody) => {
   return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
 
-const githubTweet = (entryTitle, entryUrl) => {
-  return TwitterClient.post("statuses/update", {
-    status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
-  });
+const postToMastodon = (entryTitle, entryUrl) => {
+  return (async () => {
+    const { login } = require("masto");
+    const masto = await login({
+      url: MASTODON_URL,
+      accessToken: MASTODON_ACCESS_TOKEN,
+    });
+
+    return masto.v1.statuses.create({
+      status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
+    });
+  })();
 };
 
 const sendPushover = (entryTitle, entryUrl) => {

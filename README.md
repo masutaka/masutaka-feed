@@ -5,14 +5,14 @@
 ### github/
 
 ```
-GitHub private feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -(filter)-> Twitter
+GitHub private feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -(filter)-> Mastodon
                                                                  -(filter)-> Pushover
 ```
 
 ### hatebu/
 
 ```
-はてブのお気に入り feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -> Twitter
+はてブのお気に入り feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -> Mastodon
 ```
 
 ## deployment

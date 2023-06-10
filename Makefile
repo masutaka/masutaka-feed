@@ -14,10 +14,8 @@ deploy: build
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
 		PushoverUserKey=$$PUSHOVER_USER_KEY \
-		TwitterAccessToken=$$TWITTER_ACCESS_TOKEN \
-		TwitterAccessTokenSecret=$$TWITTER_ACCESS_TOKEN_SECRET \
-		TwitterApiKey=$$TWITTER_API_KEY \
-		TwitterApiSecretKey=$$TWITTER_API_SECRET_KEY
+		MastodonUrl=$$MASTODON_URL \
+		MastodonAccessToken=$$MASTODON_ACCESS_TOKEN
 
 # .PHONY: destroy
 # destroy:

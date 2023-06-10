@@ -2,18 +2,8 @@ console.info("Loading function");
 
 const MY_ACCESS_TOKEN = process.env.MY_ACCESS_TOKEN;
 
-const TWITTER_API_KEY = process.env.TWITTER_API_KEY;
-const TWITTER_API_SECRET_KEY = process.env.TWITTER_API_SECRET_KEY;
-const TWITTER_ACCESS_TOKEN = process.env.TWITTER_ACCESS_TOKEN;
-const TWITTER_ACCESS_TOKEN_SECRET = process.env.TWITTER_ACCESS_TOKEN_SECRET;
-
-const Twitter = require("twitter");
-const TwitterClient = new Twitter({
-  consumer_key: TWITTER_API_KEY,
-  consumer_secret: TWITTER_API_SECRET_KEY,
-  access_token_key: TWITTER_ACCESS_TOKEN,
-  access_token_secret: TWITTER_ACCESS_TOKEN_SECRET,
-});
+const MASTODON_URL = process.env.MASTODON_URL;
+const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN;
 
 exports.handler = (event, context, callback) => {
   console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
@@ -46,14 +36,14 @@ exports.handler = (event, context, callback) => {
   const hatebuComment = getHatebuComment(eventBody);
   console.log(`hatebuComment: ${hatebuComment}`);
 
-  TwitterClient.post("statuses/update", {
+  postToMastodon({
     status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, " "),
   }).then((response) => {
     console.info("response ->", JSON.stringify(response));
-    callback(null, "Just tweeted!");
+    callback(null, "Just posted!");
   }).catch((error) => {
     console.error("error ->", JSON.stringify(error));
-    callback(null, "Failed to tweet...");
+    callback(null, "Failed to post...");
   });
 };
 
@@ -100,4 +90,18 @@ const getHatebuComment = (eventBody) => {
 
   // Roughly truncate
   return escaped.substr(0, 70);
+};
+
+const postToMastodon = ({status = null}) => {
+  return (async () => {
+    const { login } = require("masto");
+    const masto = await login({
+      url: MASTODON_URL,
+      accessToken: MASTODON_ACCESS_TOKEN,
+    });
+
+    return masto.v1.statuses.create({
+      status: status,
+    });
+  })();
 };
