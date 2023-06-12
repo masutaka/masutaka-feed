@@ -6,7 +6,7 @@ Description: Managed by AWS SAM
 Globals:
   Function:
     Handler: index.handler
-    Runtime: nodejs16.x
+    Runtime: nodejs18.x
 
 Resources:
   GithubFunction:
