@@ -56,9 +56,7 @@ const getEntryAuthor = (eventBody) => {
 };
 
 const getEntryTitle = (eventBody) => {
-  const entryTitle = eventBody.match(/\nentryTitle: (.+)/)[1];
-
-  return entryTitle;
+  return eventBody.match(/\nentryTitle: (.+)/)[1];
 };
 
 const getEntryUrl = (eventBody) => {
@@ -79,15 +77,13 @@ const getHatebuComment = (eventBody) => {
     return "";
   }
 
-  const escaped = entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
+  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, "\"")
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ");
-
-  return escaped;
 };
 
 const postToMastodon = ({status = null}) => {
