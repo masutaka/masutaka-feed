@@ -58,8 +58,7 @@ const getEntryAuthor = (eventBody) => {
 const getEntryTitle = (eventBody) => {
   const entryTitle = eventBody.match(/\nentryTitle: (.+)/)[1];
 
-  // Roughly truncate
-  return entryTitle.substr(0, 80);
+  return entryTitle;
 };
 
 const getEntryUrl = (eventBody) => {
@@ -88,8 +87,7 @@ const getHatebuComment = (eventBody) => {
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ");
 
-  // Roughly truncate
-  return escaped.substr(0, 70);
+  return escaped;
 };
 
 const postToMastodon = ({status = null}) => {
