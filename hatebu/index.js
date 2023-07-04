@@ -86,16 +86,24 @@ const getHatebuComment = (eventBody) => {
     .replace(/&nbsp;/g, " ");
 };
 
-const postToMastodon = ({status = null}) => {
-  return (async () => {
-    const { login } = require("masto");
+const { login } = require("masto");
+
+const postToMastodon = async ({status = null}) => {
+  if (status === null) {
+    throw new Error("Status must be provided");
+  }
+
+  try {
     const masto = await login({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });
 
-    return masto.v1.statuses.create({
+    return await masto.v1.statuses.create({
       status: status,
     });
-  })();
+  } catch (error) {
+    console.error("Failed to post to Mastodon:", error);
+    throw error;
+  }
 };

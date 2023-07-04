@@ -70,18 +70,22 @@ const getEntryUrl = (eventBody) => {
   return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
 
-const postToMastodon = (entryTitle, entryUrl) => {
-  return (async () => {
-    const { login } = require("masto");
+const { login } = require("masto");
+
+const postToMastodon = async (entryTitle, entryUrl) => {
+  try {
     const masto = await login({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });
 
-    return masto.v1.statuses.create({
+    return await masto.v1.statuses.create({
       status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
     });
-  })();
+  } catch (error) {
+    console.error("Failed to post to Mastodon:", error);
+    throw error;
+  }
 };
 
 const sendPushover = (entryTitle, entryUrl) => {
