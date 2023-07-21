@@ -14,8 +14,8 @@ const PushoverClient = new Pushover({
   token: PUSHOVER_APP_TOKEN,
 });
 
-const GITHUB_TITLE_IGNORE_REGEXP = /dependabot/;
-const GITHUB_TITLE_PUSHOVER_REGEXP = /masutaka/;
+const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(process.env.GITHUB_TITLE_IGNORE_REGEXP);
+const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(process.env.GITHUB_TITLE_PUSHOVER_REGEXP);
 
 exports.handler = (event, context, callback) => {
   console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));

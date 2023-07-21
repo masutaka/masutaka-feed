@@ -11,6 +11,8 @@ build: github hatebu
 deploy: build
 	@$(SAM) deploy --no-confirm-changeset --parameter-overrides \
 		GithubMyAccessToken=$$GITHUB_MY_ACCESS_TOKEN \
+		GithubTitleIgnoreRegexp=$$GITHUB_TITLE_IGNORE_REGEXP \
+		GithubTitlePushoverRegexp=$$GITHUB_TITLE_PUSHOVER_REGEXP \
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
 		PushoverUserKey=$$PUSHOVER_USER_KEY \
