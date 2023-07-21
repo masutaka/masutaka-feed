@@ -83,7 +83,7 @@ const postToMastodon = async (entryTitle, entryUrl) => {
       status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
     });
   } catch (error) {
-    console.error("Failed to post to Mastodon:", error);
+    console.error("[Mastodon] Failed to post", error);
     throw error;
   }
 };
