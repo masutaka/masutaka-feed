@@ -70,11 +70,11 @@ const getEntryUrl = (eventBody) => {
   return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
 
-const { login } = require("masto");
+const { createRestAPIClient } = require("masto");
 
 const postToMastodon = async (entryTitle, entryUrl) => {
   try {
-    const masto = await login({
+    const masto = await createRestAPIClient({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });
