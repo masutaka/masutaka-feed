@@ -86,7 +86,7 @@ const getHatebuComment = (eventBody) => {
     .replace(/&nbsp;/g, " ");
 };
 
-const { login } = require("masto");
+const { createRestAPIClient } = require("masto");
 
 const postToMastodon = async ({status = null}) => {
   if (status === null) {
@@ -94,7 +94,7 @@ const postToMastodon = async ({status = null}) => {
   }
 
   try {
-    const masto = await login({
+    const masto = await createRestAPIClient({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });
