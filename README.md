@@ -4,15 +4,23 @@
 
 ### github/
 
-```
-GitHub private feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -(filter)-> Mastodon
-                                                                 -(filter)-> Pushover
+```mermaid
+graph LR
+    A[GitHub private feed] --> B[IFTTT]
+    B --> C[Amazon API Gateway]
+    C --> D[AWS Lambda]
+    D -->|filter| E[Mastodon]
+    D -->|filter| F[Pushover]
 ```
 
 ### hatebu/
 
-```
-はてブのお気に入り feed -> IFTTT -> Amazon API Gateway -> AWS Lambda -> Mastodon
+```mermaid
+graph LR
+    A[はてブのお気に入り feed] --> B[IFTTT]
+    B --> C[Amazon API Gateway]
+    C --> D[AWS Lambda]
+    D --> E[Mastodon]
 ```
 
 ## deployment
