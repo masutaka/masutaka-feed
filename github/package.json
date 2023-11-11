@@ -9,7 +9,7 @@
   "author": "Takashi Masuda",
   "license": "ISC",
   "dependencies": {
-    "masto": "^6.4.0",
+    "masto": "^6.4.2",
     "pushover-notifications": "^1.2.2"
   }
 }
