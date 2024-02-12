@@ -19,7 +19,7 @@ jobs:
       with:
         aws-region: ap-northeast-1
         role-duration-seconds: 900
-        role-to-assume: ${{ secret.AWS_IAM_ROLE_ARN }}
+        role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
     - name: Setup SAM CLI
       uses: aws-actions/setup-sam@v2
       with:
@@ -30,11 +30,11 @@ jobs:
         node-version-file: '.tool-versions'
     - run: make deploy
       env:
-        GH_MY_ACCESS_TOKEN: {{ secret.GH_MY_ACCESS_TOKEN }}
-        GH_TITLE_IGNORE_REGEXP: {{ secret.GH_TITLE_IGNORE_REGEXP }}
-        GH_TITLE_PUSHOVER_REGEXP: {{ secret.GH_TITLE_PUSHOVER_REGEXP }}
-        HATEBU_MY_ACCESS_TOKEN: {{ secret.HATEBU_MY_ACCESS_TOKEN }}
-        PUSHOVER_APP_TOKEN: {{ secret.PUSHOVER_APP_TOKEN }}
-        PUSHOVER_USER_KEY: {{ secret.PUSHOVER_USER_KEY }}
-        MASTODON_URL: {{ secret.MASTODON_URL }}
-        MASTODON_ACCESS_TOKEN: {{ secret.MASTODON_ACCESS_TOKEN }}
+        GH_MY_ACCESS_TOKEN: {{ secrets.GH_MY_ACCESS_TOKEN }}
+        GH_TITLE_IGNORE_REGEXP: {{ secrets.GH_TITLE_IGNORE_REGEXP }}
+        GH_TITLE_PUSHOVER_REGEXP: {{ secrets.GH_TITLE_PUSHOVER_REGEXP }}
+        HATEBU_MY_ACCESS_TOKEN: {{ secrets.HATEBU_MY_ACCESS_TOKEN }}
+        PUSHOVER_APP_TOKEN: {{ secrets.PUSHOVER_APP_TOKEN }}
+        PUSHOVER_USER_KEY: {{ secrets.PUSHOVER_USER_KEY }}
+        MASTODON_URL: {{ secrets.MASTODON_URL }}
+        MASTODON_ACCESS_TOKEN: {{ secrets.MASTODON_ACCESS_TOKEN }}
