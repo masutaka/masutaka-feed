@@ -10,7 +10,7 @@ updates:
     assignees:
       - "masutaka"
   - package-ecosystem: "npm"
-    directory: "/hatebu"
+    directory: "/github"
     schedule:
       interval: "monthly"
       time: "19:00"
@@ -18,7 +18,7 @@ updates:
     assignees:
       - "masutaka"
   - package-ecosystem: "npm"
-    directory: "/github"
+    directory: "/hatebu"
     schedule:
       interval: "monthly"
       time: "19:00"
