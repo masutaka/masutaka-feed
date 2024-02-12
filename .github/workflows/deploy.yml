@@ -32,6 +32,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version-file: '.tool-versions'
+        cache: npm
+        cache-dependency-path: |
+          github/package-lock.json
+          hatebu/package-lock.json
     - run: make deploy
       env:
         GH_MY_ACCESS_TOKEN: ${{ secrets.GH_MY_ACCESS_TOKEN }}
