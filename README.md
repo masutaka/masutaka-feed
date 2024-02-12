@@ -1,5 +1,9 @@
 # masutaka-feed
 
+[![Deploy SAM Application - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][deploy]
+
+[deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
+
 ## features
 
 ### github/
