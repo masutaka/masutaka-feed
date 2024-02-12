@@ -25,6 +25,4 @@ graph TD
 
 ## deployment
 
-```
-$ make deploy
-```
+Every push to the `main` branch  will deploy SAM Applications.
