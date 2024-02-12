@@ -1,0 +1,40 @@
+name: Deploy SAM Application
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ap-northeast-1
+        role-duration-seconds: 900
+        role-to-assume: ${{ secret.AWS_IAM_ROLE_ARN }}
+    - name: Setup SAM CLI
+      uses: aws-actions/setup-sam@v2
+      with:
+        use-installer: true
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.tool-versions'
+    - run: make deploy
+      env:
+        GH_MY_ACCESS_TOKEN: {{ secret.GH_MY_ACCESS_TOKEN }}
+        GH_TITLE_IGNORE_REGEXP: {{ secret.GH_TITLE_IGNORE_REGEXP }}
+        GH_TITLE_PUSHOVER_REGEXP: {{ secret.GH_TITLE_PUSHOVER_REGEXP }}
+        HATEBU_MY_ACCESS_TOKEN: {{ secret.HATEBU_MY_ACCESS_TOKEN }}
+        PUSHOVER_APP_TOKEN: {{ secret.PUSHOVER_APP_TOKEN }}
+        PUSHOVER_USER_KEY: {{ secret.PUSHOVER_USER_KEY }}
+        MASTODON_URL: {{ secret.MASTODON_URL }}
+        MASTODON_ACCESS_TOKEN: {{ secret.MASTODON_ACCESS_TOKEN }}

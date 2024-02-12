@@ -9,10 +9,10 @@ build: github hatebu
 
 .PHONY: deploy
 deploy: build
-	@$(SAM) deploy --no-confirm-changeset --parameter-overrides \
-		GithubMyAccessToken=$$GITHUB_MY_ACCESS_TOKEN \
-		GithubTitleIgnoreRegexp=$$GITHUB_TITLE_IGNORE_REGEXP \
-		GithubTitlePushoverRegexp=$$GITHUB_TITLE_PUSHOVER_REGEXP \
+	@$(SAM) deploy --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides \
+		GithubMyAccessToken=$$GH_MY_ACCESS_TOKEN \
+		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
+		GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP \
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
 		PushoverUserKey=$$PUSHOVER_USER_KEY \
