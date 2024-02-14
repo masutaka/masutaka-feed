@@ -46,3 +46,8 @@ jobs:
         PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
         MASTODON_URL: ${{ secrets.MASTODON_URL }}
         MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+  pushover:
+    name: pushover if failure
+    if: github.ref_name == github.event.repository.default_branch && failure()
+    needs: [deploy]
+    uses: ./.github/workflows/pushover.yml
