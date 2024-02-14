@@ -1,6 +1,6 @@
 # masutaka-feed
 
-[![Deploy SAM Application - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][deploy]
+[![Deploy - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][deploy]
 
 [deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
 
@@ -29,4 +29,4 @@ graph TD
 
 ## deployment
 
-Every push to the `main` branch  will deploy SAM Applications.
+Every push to the `main` branch will deploy SAM Applications.

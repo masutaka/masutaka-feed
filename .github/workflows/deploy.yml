@@ -1,4 +1,4 @@
-name: Deploy SAM Application
+name: Deploy
 
 on:
   push:
