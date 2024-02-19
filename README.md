@@ -10,7 +10,7 @@
 
 ```mermaid
 graph TD
-    A[GitHub private feed] --> B[IFTTT]
+    A[GitHub private feed] --> B[IFTTT Pro]
     B --> C[Amazon API Gateway]
     C --> D[AWS Lambda]
     D -->|filter| E[Mastodon]
@@ -21,7 +21,7 @@ graph TD
 
 ```mermaid
 graph TD
-    A[はてブのお気に入り feed] --> B[IFTTT]
+    A[はてブのお気に入り feed] --> B[IFTTT Pro]
     B --> C[Amazon API Gateway]
     C --> D[AWS Lambda]
     D --> E[Mastodon]
