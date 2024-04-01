@@ -9,6 +9,6 @@
   "author": "Takashi Masuda",
   "license": "ISC",
   "dependencies": {
-    "masto": "^6.6.3"
+    "masto": "^6.7.0"
   }
 }
