@@ -3,7 +3,6 @@ name: Deploy
 on:
   workflow_run:
     workflows:
-      - CodeQL
       - Test
     types:
       - completed
