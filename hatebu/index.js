@@ -80,10 +80,10 @@ const getHatebuComment = (eventBody) => {
   return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
     .replace(/&quot;/g, "\"")
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
 };
 
 const { createRestAPIClient } = require("masto");
