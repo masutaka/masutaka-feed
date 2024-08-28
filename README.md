@@ -1,6 +1,7 @@
 # masutaka-feed
 
-[![CodeQL - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)][codeql]
+[![CodeQL - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)][![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmasutaka%2Fmasutaka-feed.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmasutaka%2Fmasutaka-feed?ref=badge_shield)
+[codeql]
 [![Deploy - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][deploy]
 
 [codeql]: https://github.com/masutaka/masutaka-feed/actions/workflows/github-code-scanning/codeql?query=branch%3Amain
@@ -32,3 +33,7 @@ graph TD
 ## deployment
 
 Every push to the `main` branch will deploy SAM Applications.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmasutaka%2Fmasutaka-feed.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmasutaka%2Fmasutaka-feed?ref=badge_large)
