@@ -8,7 +8,7 @@
 [fossa]: https://app.fossa.com/projects/git%2Bgithub.com%2Fmasutaka%2Fmasutaka-feed?ref=badge_shield
 [deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
 
-## features
+## Features
 
 ### github/
 
@@ -31,7 +31,7 @@ graph TD
     D --> E[Mastodon]
 ```
 
-## deployment
+## Deployment
 
 Every push to the `main` branch will deploy SAM Applications.
 
