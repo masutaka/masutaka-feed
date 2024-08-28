@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Takashi Masuda",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "masto": "^6.8.0",
     "pushover-notifications": "^1.2.3"
