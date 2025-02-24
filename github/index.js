@@ -28,13 +28,13 @@ exports.handler = (event, context, callback) => {
   // entryUrl: {{EntryUrl}}
   const eventBody = event.body;
 
-  const accessToken = getAccessToken(eventBody);
+  const accessToken = _getAccessToken(eventBody);
   if (accessToken != MY_ACCESS_TOKEN) {
     console.error(`Invalid token ${accessToken}`);
     return;
   }
 
-  const entryTitle = getEntryTitle(eventBody);
+  const entryTitle = _getEntryTitle(eventBody);
   console.log(`entryTitle: ${entryTitle}`);
 
   if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
@@ -42,10 +42,10 @@ exports.handler = (event, context, callback) => {
     return;
   }
 
-  const entryUrl = getEntryUrl(eventBody);
+  const entryUrl = _getEntryUrl(eventBody);
   console.log(`entryUrl: ${entryUrl}`);
 
-  Promise.all([postToMastodon(entryTitle, entryUrl), sendPushover(entryTitle, entryUrl)])
+  Promise.all([_postToMastodon(entryTitle, entryUrl), _sendPushover(entryTitle, entryUrl)])
     .then(([mastodon, pushover]) => {
       console.info("[Mastodon] response ->", JSON.stringify(mastodon));
       console.info("[Pushover] response ->", JSON.stringify(pushover));
@@ -58,21 +58,21 @@ exports.handler = (event, context, callback) => {
     });
 };
 
-const getAccessToken = (eventBody) => {
+const _getAccessToken = (eventBody) => {
   return eventBody.match(/^accessToken: (.+)/)[1];
 };
 
-const getEntryTitle = (eventBody) => {
+const _getEntryTitle = (eventBody) => {
   return eventBody.match(/\nentryTitle: (.+)/)[1];
 };
 
-const getEntryUrl = (eventBody) => {
+const _getEntryUrl = (eventBody) => {
   return eventBody.match(/\nentryUrl: (.+)/)[1];
 };
 
 const { createRestAPIClient } = require("masto");
 
-const postToMastodon = async (entryTitle, entryUrl) => {
+const _postToMastodon = async (entryTitle, entryUrl) => {
   try {
     const masto = await createRestAPIClient({
       url: MASTODON_URL,
@@ -80,7 +80,7 @@ const postToMastodon = async (entryTitle, entryUrl) => {
     });
 
     return await masto.v1.statuses.create({
-      status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
+      status: `[GH] ${entryTitle} ${_getMessage(entryTitle, entryUrl)}`,
     });
   } catch (error) {
     console.error("[Mastodon] Failed to post", error);
@@ -88,8 +88,8 @@ const postToMastodon = async (entryTitle, entryUrl) => {
   }
 };
 
-const sendPushover = (entryTitle, entryUrl) => {
-  const message = getMessage(entryTitle, entryUrl);
+const _sendPushover = (entryTitle, entryUrl) => {
+  const message = _getMessage(entryTitle, entryUrl);
 
   if (GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
     return PushoverClient.send({
@@ -104,7 +104,7 @@ const sendPushover = (entryTitle, entryUrl) => {
   return `Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
 };
 
-const getMessage = (entryTitle, entryUrl) => {
+const _getMessage = (entryTitle, entryUrl) => {
   const found = entryTitle.match(/^([^ ]+) started following/);
 
   if (found) {
