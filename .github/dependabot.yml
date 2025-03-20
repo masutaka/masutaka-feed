@@ -7,7 +7,7 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
-    assignees:
+    reviewers:
       - "masutaka"
   - package-ecosystem: "npm"
     directory: "/github"
@@ -15,7 +15,7 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
-    assignees:
+    reviewers:
       - "masutaka"
   - package-ecosystem: "npm"
     directory: "/hatebu"
@@ -23,5 +23,5 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
-    assignees:
+    reviewers:
       - "masutaka"
