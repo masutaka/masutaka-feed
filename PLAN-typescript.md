@@ -20,6 +20,8 @@
 
 ### フェーズ1: TypeScript 環境準備
 
+**重要**: AWS SAMはesbuildによるTypeScriptビルドを公式サポートしており、tscよりも高速で最適化されたビルドが可能です。フェーズ1.5でesbuild設定への移行を推奨します。
+
 #### 1.1 各関数ディレクトリでの TypeScript パッケージ追加
 
 **github/ ディレクトリ:**
@@ -111,6 +113,107 @@ clean:
 	@$(NPM) run clean
 ```
 
+### フェーズ1.5: AWS SAM esbuild設定（推奨）
+
+**AWS SAMの公式esbuildサポートを活用したビルド設定**
+
+#### 1.5.1 esbuildのメリット
+
+- **高速ビルド**: tscよりも大幅に高速
+- **最適化**: tree shaking、minification、bundling
+- **ネイティブTypeScript対応**: Babelやtsconfigの複雑な設定不要
+- **小さなバンドルサイズ**: 使用されていないコードの除去
+
+#### 1.5.2 template.yamlの更新
+
+各Lambda関数にesbuild設定を追加：
+
+```yaml
+Resources:
+  GithubFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+    Properties:
+      CodeUri: github/
+      Handler: index.handler
+      # ... 既存設定
+
+  HatebuFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+    Properties:
+      CodeUri: hatebu/
+      Handler: index.handler
+      # ... 既存設定
+```
+
+#### 1.5.3 package.jsonの調整
+
+esbuild使用時はnpm run buildスクリプトが不要になる（SAMが自動処理）：
+
+```json
+{
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
+```
+
+#### 1.5.4 tsconfig.jsonの最適化
+
+esbuild用に設定を簡略化：
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": ["ES2020"],
+    "strict": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+#### 1.5.5 Makefileの更新
+
+SAMビルドを活用：
+
+```makefile
+NPM := npm
+
+all: build
+
+.PHONY: install
+install:
+	@$(NPM) install
+
+.PHONY: build
+build: install
+	# esbuildはsam buildで自動実行されるため、npm run buildは不要
+```
+
 ### フェーズ2: ファイル拡張子変更と基本設定
 
 #### 2.1 JavaScript ファイルの TypeScript 化
@@ -120,13 +223,15 @@ clean:
 
 #### 2.2 SAM template.yaml の更新
 
-各関数の CodeUri を調整（必要に応じて）：
+**esbuild設定（フェーズ1.5）を使用する場合は不要。**
+
+esbuildを使用しない場合の調整：
 
 ```yaml
 GithubFunction:
   Type: AWS::Serverless::Function
   Properties:
-    CodeUri: github/dist/  # または github/ のまま
+    CodeUri: github/
     Handler: index.handler
 ```
 
@@ -242,16 +347,38 @@ npm install --save-dev @typescript-eslint/parser @typescript-eslint/eslint-plugi
 cd github && npm install --save-dev typescript @types/node @types/aws-lambda
 cd ../hatebu && npm install --save-dev typescript @types/node @types/aws-lambda
 
-# ディレクトリ構造の準備
-cd ../github && mkdir src && mv index.js src/index.ts
-cd ../hatebu && mkdir src && mv index.js src/index.ts
+# index.js を index.ts にリネーム
+cd ../github && mv index.js index.ts
+cd ../hatebu && mv index.js index.ts
 
 # tsconfig.json とビルドスクリプトの追加
 # （各ファイルを手動で作成）
 ```
 
+### 1.5. フェーズ1.5の実行（推奨：esbuild設定）
+
+```bash
+# template.yamlにesbuild Metadataを追加
+# （手動でファイルを編集）
+
+# package.jsonからbuildスクリプトを削除（オプション）
+# esbuildはSAMが自動実行するため
+
+# 全体ビルドテスト（esbuild使用）
+make build
+# または
+sam build
+```
+
 ### 2. フェーズ2の実行
 
+**esbuild使用時:**
+```bash
+# SAMが自動でesbuildを実行
+make build
+```
+
+**従来のtsc使用時:**
 ```bash
 # ビルドテスト
 cd github && npm run build
@@ -273,14 +400,44 @@ cd .. && make build
 
 ## 注意事項
 
+### 一般的な注意事項
+
 1. **動作確認必須**: 各フェーズ完了後、実際にデプロイして動作確認を行うこと
 2. **バックアップ**: 移行前に現在の動作状態をバックアップすること
 3. **段階的実行**: 一度にすべてを変更せず、フェーズごとに確実に進めること
 4. **依存関係**: 外部ライブラリの型定義が不完全な場合は、独自定義を作成すること
 
+### esbuild使用時の注意事項
+
+#### メリット
+- **高速ビルド**: tscの数倍〜数十倍高速
+- **最適化されたバンドル**: tree shaking、minification、dead code elimination
+- **デプロイサイズ削減**: 不要な依存関係の除去
+- **設定の簡素化**: 複雑なwebpack設定が不要
+- **AWS公式サポート**: SAM CLIでの完全サポート
+
+#### 制限事項・注意点
+- **プラグインサポート制限**: esbuildプラグインの使用に制限あり
+- **出力フォーマット固定**: CommonJS形式に固定される
+- **デバッグ**: sourcemap設定が重要（本番環境では無効化推奨）
+- **型チェック**: esbuildは型チェックを行わないため、CI/CDでの型チェック設定が重要
+- **互換性**: 一部の古いNode.js機能との互換性問題の可能性
+
+#### 推奨事項
+- **開発環境**: esbuild + sourcemap有効
+- **本番環境**: esbuild + minify有効 + sourcemap無効
+- **CI/CD**: 別途`tsc --noEmit`での型チェックを推奨
+
 ## 期待される効果
 
+### TypeScript化の効果
 - **型安全性**: コンパイル時にエラーを検出
 - **開発効率**: IDEでのコード補完・リファクタリング支援
 - **保守性**: コードの可読性と保守性の向上
 - **ドキュメント**: 型定義自体がドキュメントとして機能
+
+### esbuild導入の追加効果
+- **ビルド高速化**: 開発サイクルの大幅短縮
+- **デプロイ最適化**: Lambda関数の起動時間短縮
+- **運用コスト削減**: 小さなバンドルサイズによるネットワーク転送量削減
+- **開発体験向上**: 設定の簡素化と高速フィードバック
