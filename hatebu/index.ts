@@ -1,11 +1,32 @@
+import { createRestAPIClient } from "masto";
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+
 console.info("Loading function");
 
-const MY_ACCESS_TOKEN = process.env.MY_ACCESS_TOKEN;
+// 環境変数の型定義
+interface EnvironmentVariables {
+  MY_ACCESS_TOKEN: string;
+  MASTODON_URL: string;
+  MASTODON_ACCESS_TOKEN: string;
+}
 
-const MASTODON_URL = process.env.MASTODON_URL;
-const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN;
+// 型安全な環境変数取得
+const getEnvVar = (key: keyof EnvironmentVariables): string => {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Environment variable ${key} is not set`);
+  }
+  return value;
+};
 
-exports.handler = (event, context, callback) => {
+const MY_ACCESS_TOKEN = getEnvVar('MY_ACCESS_TOKEN');
+const MASTODON_URL = getEnvVar('MASTODON_URL');
+const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context
+): Promise<APIGatewayProxyResult> => {
   console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
   console.log("context ->", JSON.stringify(context));
 
@@ -17,11 +38,21 @@ exports.handler = (event, context, callback) => {
   // entryUrl: {{EntryUrl}}
   // entryContent: {{EntryContent}} # <= It should be last
   const eventBody = event.body;
+  
+  if (!eventBody) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Event body is missing" })
+    };
+  }
 
   const accessToken = getAccessToken(eventBody);
   if (accessToken != MY_ACCESS_TOKEN) {
     console.error(`Invalid token ${accessToken}`);
-    return;
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: "Invalid token" })
+    };
   }
 
   const entryAuthor = getEntryAuthor(eventBody);
@@ -36,40 +67,64 @@ exports.handler = (event, context, callback) => {
   const hatebuComment = getHatebuComment(eventBody);
   console.log(`hatebuComment: ${hatebuComment}`);
 
-  postToMastodon({
-    status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, " "),
-  }).then((response) => {
+  try {
+    const response = await postToMastodon({
+      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, " "),
+    });
+    
     console.info("response ->", JSON.stringify(response));
-    callback(null, "Just posted!");
-  }).catch((error) => {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Just posted!" })
+    };
+  } catch (error) {
     console.error("error ->", JSON.stringify(error));
-    callback(null, "Failed to post...");
-  });
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Failed to post..." })
+    };
+  }
 };
 
-const getAccessToken = (eventBody) => {
-  return eventBody.match(/^accessToken: (.+)/)[1];
+const getAccessToken = (eventBody: string): string => {
+  const match = eventBody.match(/^accessToken: (.+)/);
+  if (!match) {
+    throw new Error('Access token not found in event body');
+  }
+  return match[1];
 };
 
-const getEntryAuthor = (eventBody) => {
-  return eventBody.match(/\nentryAuthor: (.+)/)[1];
+const getEntryAuthor = (eventBody: string): string => {
+  const match = eventBody.match(/\nentryAuthor: (.+)/);
+  if (!match) {
+    throw new Error('Entry author not found in event body');
+  }
+  return match[1];
 };
 
-const getEntryTitle = (eventBody) => {
-  return eventBody.match(/\nentryTitle: (.+)/)[1];
+const getEntryTitle = (eventBody: string): string => {
+  const match = eventBody.match(/\nentryTitle: (.+)/);
+  if (!match) {
+    throw new Error('Entry title not found in event body');
+  }
+  return match[1];
 };
 
-const getEntryUrl = (eventBody) => {
-  return eventBody.match(/\nentryUrl: (.+)/)[1];
+const getEntryUrl = (eventBody: string): string => {
+  const match = eventBody.match(/\nentryUrl: (.+)/);
+  if (!match) {
+    throw new Error('Entry URL not found in event body');
+  }
+  return match[1];
 };
 
-const getEntryContent = (eventBody) => {
+const getEntryContent = (eventBody: string): string => {
   // entryContent may contain line breaks.
   return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "")
   ;
 };
 
-const getHatebuComment = (eventBody) => {
+const getHatebuComment = (eventBody: string): string => {
   const entryContent = getEntryContent(eventBody);
   console.log(`entryContent: ${entryContent}`);
 
@@ -86,12 +141,13 @@ const getHatebuComment = (eventBody) => {
     .replace(/&amp;/g, "&");
 };
 
-const { createRestAPIClient } = require("masto");
 
-const postToMastodon = async ({status = null}) => {
-  if (status === null) {
-    throw new Error("Status must be provided");
-  }
+interface PostToMastodonParams {
+  status: string;
+}
+
+const postToMastodon = async (params: PostToMastodonParams): Promise<any> => {
+  const { status } = params;
 
   try {
     const masto = await createRestAPIClient({
