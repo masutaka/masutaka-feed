@@ -1,2 +1,5 @@
 /.aws-sam
-node_modules
+/github/index.js
+/github/node_modules/
+/hatebu/index.js
+/hatebu/node_modules/
