@@ -120,8 +120,11 @@ const getEntryUrl = (eventBody: string): string => {
 
 const getEntryContent = (eventBody: string): string => {
   // entryContent may contain line breaks.
-  return eventBody.match(/\nentryContent: (.+)/s)[1].replace(/\n/g, "")
-  ;
+  const match = eventBody.match(/\nentryContent: (.+)/s);
+  if (!match) {
+    throw new Error('Entry content not found in event body');
+  }
+  return match[1].replace(/\n/g, "");
 };
 
 const getHatebuComment = (eventBody: string): string => {
@@ -132,7 +135,12 @@ const getHatebuComment = (eventBody: string): string => {
     return "";
   }
 
-  return entryContent.match(/<\/a> ([^>]+)<\/p>$/)[1]
+  const commentMatch = entryContent.match(/<\/a> ([^>]+)<\/p>$/);
+  if (!commentMatch) {
+    throw new Error('Hatebu comment not found in entry content');
+  }
+  
+  return commentMatch[1]
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, "\"")
