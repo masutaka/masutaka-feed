@@ -11,6 +11,14 @@ Globals:
 Resources:
   GithubFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
     Properties:
       CodeUri: github/
       Description: Managed by AWS SAM
@@ -32,6 +40,14 @@ Resources:
       Timeout: 180 # seconds (default: 3)
   HatebuFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
     Properties:
       CodeUri: hatebu/
       Description: Managed by AWS SAM

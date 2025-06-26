@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Takashi Masuda",
   "license": "MIT",
   "dependencies": {
+    "esbuild": "0.25.5",
     "masto": "^7.1.0",
     "pushover-notifications": "^1.2.3"
   },

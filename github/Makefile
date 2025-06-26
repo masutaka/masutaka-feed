@@ -1,11 +1,12 @@
 NPM := npm
+NPX := npx
 
-all: build
+all: typecheck
 
 .PHONY: install
 install:
 	@$(NPM) install
 
-.PHONY: build
-build: install
-	@$(NPM) run build
+.PHONY: typecheck
+typecheck: install
+	@$(NPX) tsc --noEmit

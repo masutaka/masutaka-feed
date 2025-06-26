@@ -3,8 +3,11 @@ MAKE := make
 SAM := sam
 STACK_NAME := masutaka-feed
 
+.PHONY: typecheck
+typecheck: github hatebu
+
 .PHONY: build
-build: github hatebu
+build: typecheck
 	@$(SAM) build
 
 .PHONY: deploy
