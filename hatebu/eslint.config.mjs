@@ -47,7 +47,27 @@ export default [
       // Promise関連のルール
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/no-misused-promises": "error"
+      "@typescript-eslint/no-misused-promises": "error",
+      // コード品質ルール
+      "complexity": ["warn", 10],
+      "max-lines-per-function": ["warn", {
+        "max": 50,
+        "skipBlankLines": true,
+        "skipComments": true
+      }],
+      "max-lines": ["warn", {
+        "max": 300,
+        "skipBlankLines": true,
+        "skipComments": true
+      }],
+      // セキュリティ関連ルール
+      "no-eval": "error",
+      "no-new-func": "error",
+      "@typescript-eslint/no-dynamic-delete": "error",
+      // console使用の制限
+      "no-console": ["warn", {
+        "allow": ["info", "warn", "error", "log"]
+      }]
     }
   },
   {
