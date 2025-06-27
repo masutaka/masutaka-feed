@@ -32,14 +32,6 @@ jobs:
       uses: aws-actions/setup-sam@v2
       with:
         use-installer: true
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version-file: '.tool-versions'
-        cache: npm
-        cache-dependency-path: |
-          github/package-lock.json
-          hatebu/package-lock.json
     - run: make deploy
       env:
         GH_MY_ACCESS_TOKEN: ${{ secrets.GH_MY_ACCESS_TOKEN }}

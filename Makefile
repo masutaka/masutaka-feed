@@ -29,7 +29,7 @@ lint-tsc:
 	@$(MAKE) -w -C hatebu lint-tsc
 
 .PHONY: build
-build: install lint
+build:
 	@$(SAM) build
 
 .PHONY: deploy
