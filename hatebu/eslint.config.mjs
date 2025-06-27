@@ -20,7 +20,11 @@ export default [
         process: "readonly",
         Buffer: "readonly",
         __dirname: "readonly",
-        __filename: "readonly"
+        __filename: "readonly",
+        // CommonJS環境（Lambda向け）
+        exports: "readonly",
+        module: "readonly",
+        require: "readonly"
       }
     },
     plugins: {
@@ -30,8 +34,9 @@ export default [
       ...js.configs.recommended.rules,
       ...typescript.configs.recommended.rules,
       "indent": ["error", 2],
-      "quotes": "off",
+      "quotes": ["error", "single", { "avoidEscape": true }],
       "semi": ["error", "always"],
+      "eol-last": ["error", "always"],
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": ["error", {

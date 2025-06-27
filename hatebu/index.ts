@@ -1,7 +1,7 @@
-import { createRestAPIClient } from "masto";
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import { createRestAPIClient } from 'masto';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
-console.info("Loading function");
+console.info('Loading function');
 
 // 環境変数の型定義
 interface EnvironmentVariables {
@@ -27,8 +27,8 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN, "********"));
-  console.log("context ->", JSON.stringify(context));
+  console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN, '********'));
+  console.log('context ->', JSON.stringify(context));
 
   // eventBody is string which is the following format.
   //
@@ -42,7 +42,7 @@ export const handler = async (
   if (!eventBody) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Event body is missing" })
+      body: JSON.stringify({ error: 'Event body is missing' })
     };
   }
 
@@ -51,7 +51,7 @@ export const handler = async (
     console.error(`Invalid token ${accessToken}`);
     return {
       statusCode: 401,
-      body: JSON.stringify({ error: "Invalid token" })
+      body: JSON.stringify({ error: 'Invalid token' })
     };
   }
 
@@ -69,19 +69,19 @@ export const handler = async (
 
   try {
     const response = await postToMastodon({
-      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, " "),
+      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' '),
     });
     
-    console.info("response ->", JSON.stringify(response));
+    console.info('response ->', JSON.stringify(response));
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Just posted!" })
+      body: JSON.stringify({ message: 'Just posted!' })
     };
   } catch (error) {
-    console.error("error ->", JSON.stringify(error));
+    console.error('error ->', JSON.stringify(error));
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to post..." })
+      body: JSON.stringify({ error: 'Failed to post...' })
     };
   }
 };
@@ -124,7 +124,7 @@ const getEntryContent = (eventBody: string): string => {
   if (!match) {
     throw new Error('Entry content not found in event body');
   }
-  return match[1].replace(/\n/g, "");
+  return match[1].replace(/\n/g, '');
 };
 
 const getHatebuComment = (eventBody: string): string => {
@@ -132,7 +132,7 @@ const getHatebuComment = (eventBody: string): string => {
   console.log(`entryContent: ${entryContent}`);
 
   if (/<\/a> <\/p>$/.test(entryContent)) {
-    return "";
+    return '';
   }
 
   const commentMatch = entryContent.match(/<\/a> ([^>]+)<\/p>$/);
@@ -141,12 +141,12 @@ const getHatebuComment = (eventBody: string): string => {
   }
   
   return commentMatch[1]
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&");
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&');
 };
 
 
@@ -167,7 +167,7 @@ const postToMastodon = async (params: PostToMastodonParams): Promise<any> => {
       status: status,
     });
   } catch (error) {
-    console.error("Failed to post to Mastodon:", error);
+    console.error('Failed to post to Mastodon:', error);
     throw error;
   }
 };

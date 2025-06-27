@@ -1,10 +1,10 @@
-import { createRestAPIClient } from "masto";
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import { createRestAPIClient } from 'masto';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
 
 // pushover-notificationsをrequireで読み込み
-const PushoverLib = require("pushover-notifications") as typeof Pushover;
+const PushoverLib = require('pushover-notifications') as typeof Pushover;
 
-console.info("Loading function");
+console.info('Loading function');
 
 // Pushover型定義
 interface PushoverConfig {
@@ -68,8 +68,8 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  console.log("event ->", JSON.stringify(event).replace(MY_ACCESS_TOKEN || "", "********"));
-  console.log("context ->", JSON.stringify(context));
+  console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN || '', '********'));
+  console.log('context ->', JSON.stringify(context));
 
   // eventBody is string which is the following format.
   //
@@ -81,7 +81,7 @@ export const handler = async (
   if (!eventBody) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Event body is missing" })
+      body: JSON.stringify({ error: 'Event body is missing' })
     };
   }
 
@@ -90,7 +90,7 @@ export const handler = async (
     console.error(`Invalid token ${accessToken}`);
     return {
       statusCode: 401,
-      body: JSON.stringify({ error: "Invalid token" })
+      body: JSON.stringify({ error: 'Invalid token' })
     };
   }
 
@@ -101,7 +101,7 @@ export const handler = async (
     console.info(`[GH] Ignore "${entryTitle}"`);
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Ignored by filter" })
+      body: JSON.stringify({ message: 'Ignored by filter' })
     };
   }
 
@@ -114,18 +114,18 @@ export const handler = async (
       sendPushover(entryTitle, entryUrl)
     ]);
     
-    console.info("[Mastodon] response ->", JSON.stringify(mastodon));
-    console.info("[Pushover] response ->", JSON.stringify(pushover));
+    console.info('[Mastodon] response ->', JSON.stringify(mastodon));
+    console.info('[Pushover] response ->', JSON.stringify(pushover));
     
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Just posted or pushovered!" })
+      body: JSON.stringify({ message: 'Just posted or pushovered!' })
     };
   } catch (error) {
-    console.error("Error occurred:", error);
+    console.error('Error occurred:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to post or pushover..." })
+      body: JSON.stringify({ error: 'Failed to post or pushover...' })
     };
   }
 };
@@ -166,7 +166,7 @@ const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any
       status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
     });
   } catch (error) {
-    console.error("[Mastodon] Failed to post", error);
+    console.error('[Mastodon] Failed to post', error);
     throw error;
   }
 };
@@ -178,9 +178,9 @@ const sendPushover = (entryTitle: string, entryUrl: string): Promise<any> | stri
     return PushoverClient.send({
       title: entryTitle,
       message: message, // required
-      device: "Android",
+      device: 'Android',
       priority: 0,      // normal
-      sound: "gamelan",
+      sound: 'gamelan',
     });
   }
 
