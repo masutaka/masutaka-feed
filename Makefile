@@ -6,6 +6,16 @@ STACK_NAME := masutaka-feed
 .PHONY: typecheck
 typecheck: github hatebu
 
+.PHONY: fmt-eslint
+fmt-eslint:
+	@$(MAKE) -w -C github fmt-eslint
+	@$(MAKE) -w -C hatebu fmt-eslint
+
+.PHONY: lint-eslint
+lint-eslint:
+	@$(MAKE) -w -C github lint-eslint
+	@$(MAKE) -w -C hatebu lint-eslint
+
 .PHONY: build
 build: typecheck
 	@$(SAM) build
