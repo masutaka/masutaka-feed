@@ -45,7 +45,11 @@ export default [
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_|^Pushover$"
       }],
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      // Promise関連のルール
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/await-thenable": "error",
+      "@typescript-eslint/no-misused-promises": "error"
     }
   },
   {

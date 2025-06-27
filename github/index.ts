@@ -157,7 +157,7 @@ const getEntryUrl = (eventBody: string): string => {
 
 const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any> => {
   try {
-    const masto = await createRestAPIClient({
+    const masto = createRestAPIClient({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });

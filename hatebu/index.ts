@@ -158,7 +158,7 @@ const postToMastodon = async (params: PostToMastodonParams): Promise<any> => {
   const { status } = params;
 
   try {
-    const masto = await createRestAPIClient({
+    const masto = createRestAPIClient({
       url: MASTODON_URL,
       accessToken: MASTODON_ACCESS_TOKEN,
     });
