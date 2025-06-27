@@ -171,7 +171,7 @@ const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any
   }
 };
 
-const sendPushover = (entryTitle: string, entryUrl: string): Promise<any> | string => {
+const sendPushover = async (entryTitle: string, entryUrl: string): Promise<any> => {
   const message = getMessage(entryTitle, entryUrl);
 
   if (GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
@@ -184,7 +184,7 @@ const sendPushover = (entryTitle: string, entryUrl: string): Promise<any> | stri
     });
   }
 
-  return `Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`;
+  return Promise.resolve(`Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`);
 };
 
 const getMessage = (entryTitle: string, entryUrl: string): string => {
