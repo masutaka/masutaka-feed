@@ -14,7 +14,7 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: es2020
         Sourcemap: false
         EntryPoints:
@@ -43,7 +43,7 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: es2020
         Sourcemap: false
         EntryPoints:
