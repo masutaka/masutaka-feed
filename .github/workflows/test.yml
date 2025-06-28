@@ -30,10 +30,24 @@ jobs:
       contents: read
       security-events: write
     uses: route06/actions/.github/workflows/codeql.yml@155715656c4cd9079f1213d08d058e78dd00cae7 # v2.6.0
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.tool-versions'
+        cache: npm
+        cache-dependency-path: |
+          github/package-lock.json
+          hatebu/package-lock.json
+    - run: make install lint
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()
-    needs: [actionlint, codeql]
+    needs: [actionlint, codeql, lint]
     uses: ./.github/workflows/pushover.yml
     secrets:
       PUSHOVER_API_KEY: ${{ secrets.PUSHOVER_API_KEY }}
