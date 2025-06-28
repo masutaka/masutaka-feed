@@ -34,7 +34,7 @@ build:
 
 .PHONY: deploy
 deploy: build
-	@$(SAM) deploy --no-fail-on-empty-changeset --parameter-overrides \
+	@$(SAM) deploy --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides \
 		GithubMyAccessToken=$$GH_MY_ACCESS_TOKEN \
 		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
 		GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP \
