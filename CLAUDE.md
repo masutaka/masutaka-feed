@@ -22,7 +22,7 @@ AWS SAMを使用したサーバーレスアプリケーション。GitHubの活�
 
 ```bash
 # 依存関係のインストール（github/, hatebu/のnpm install含む）
-make install
+make setup
 
 # TypeScriptとESLintのチェック
 make lint
@@ -41,10 +41,10 @@ make deploy
 
 ```bash
 # github/配下での作業
-cd github && npm install
+cd github && make setup
 
 # hatebu/配下での作業
-cd hatebu && npm install
+cd hatebu && make setup
 ```
 
 ## 開発のポイント

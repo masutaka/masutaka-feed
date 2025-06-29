@@ -3,10 +3,10 @@ MAKE := make
 SAM := sam
 STACK_NAME := masutaka-feed
 
-.PHONY: install
-install:
-	@$(MAKE) -w -C github install
-	@$(MAKE) -w -C hatebu install
+.PHONY: setup
+setup:
+	@$(MAKE) -w -C github setup
+	@$(MAKE) -w -C hatebu setup
 
 .PHONY: fmt-eslint
 fmt-eslint:

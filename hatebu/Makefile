@@ -1,8 +1,8 @@
 NPM := npm
 NPX := npx
 
-.PHONY: install
-install:
+.PHONY: setup
+setup:
 	@$(NPM) install
 
 .PHONY: fmt-eslint

@@ -43,7 +43,7 @@ jobs:
         cache-dependency-path: |
           github/package-lock.json
           hatebu/package-lock.json
-    - run: make install lint
+    - run: make setup lint
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()
