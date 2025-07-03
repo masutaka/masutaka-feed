@@ -1,4 +1,4 @@
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -13,9 +13,13 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
+    ignore:
+      - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
   - package-ecosystem: "npm"
     directory: "/hatebu"
     schedule:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
+    ignore:
+      - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
