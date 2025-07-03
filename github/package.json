@@ -9,7 +9,7 @@
   "dependencies": {
     "esbuild": "0.25.5",
     "masto": "7.1.0",
-    "pushover-notifications": "^1.2.3"
+    "pushover-notifications": "1.2.3"
   },
   "devDependencies": {
     "@eslint/js": "9.30.1",
