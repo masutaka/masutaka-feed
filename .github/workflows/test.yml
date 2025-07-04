@@ -41,8 +41,10 @@ jobs:
         node-version-file: '.tool-versions'
         cache: npm
         cache-dependency-path: |
-          github/package-lock.json
-          hatebu/package-lock.json
+          github/notifier/package-lock.json
+          github/subscriber/package-lock.json
+          hatebu/notifier/package-lock.json
+          hatebu/subscriber/package-lock.json
     - run: make setup lint
   pushover:
     name: pushover if failure
