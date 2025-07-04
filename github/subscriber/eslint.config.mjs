@@ -69,7 +69,9 @@ export default [
       // console使用の制限
       "no-console": ["warn", {
         "allow": ["info", "warn", "error", "log"]
-      }]
+      }],
+      // 関数スタイルの統一
+      "func-style": ["error", "expression", { "allowArrowFunctions": true }]
     }
   },
   {

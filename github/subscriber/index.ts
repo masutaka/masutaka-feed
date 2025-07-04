@@ -60,7 +60,7 @@ export const handler = async (): Promise<void> => {
   }
 };
 
-async function checkIfNewEntry(entryId: string, tableName: string): Promise<boolean> {
+const checkIfNewEntry = async (entryId: string, tableName: string): Promise<boolean> => {
   try {
     const result = await dynamoClient.send(new GetCommand({
       TableName: tableName,
@@ -71,9 +71,9 @@ async function checkIfNewEntry(entryId: string, tableName: string): Promise<bool
     console.error(`Error checking entry ${entryId}:`, error);
     throw error;
   }
-}
+};
 
-async function processNewEntry(entryId: string, item: GitHubFeedItem, targetFunctionArn: string, tableName: string): Promise<void> {
+const processNewEntry = async (entryId: string, item: GitHubFeedItem, targetFunctionArn: string, tableName: string): Promise<void> => {
   console.info(`Processing new entry: ${entryId}`);
 
   const payload: DirectInvokeEvent = {
@@ -94,9 +94,9 @@ async function processNewEntry(entryId: string, item: GitHubFeedItem, targetFunc
     console.error(`Failed to process entry ${entryId}:`, error);
     throw error;
   }
-}
+};
 
-async function markAsProcessed(entryId: string, item: GitHubFeedItem, tableName: string): Promise<void> {
+const markAsProcessed = async (entryId: string, item: GitHubFeedItem, tableName: string): Promise<void> => {
   const now = Math.floor(Date.now() / 1000);
   try {
     await dynamoClient.send(new PutCommand({
@@ -112,4 +112,4 @@ async function markAsProcessed(entryId: string, item: GitHubFeedItem, tableName:
     console.error(`Error marking entry ${entryId} as processed:`, error);
     throw error;
   }
-}
+};
