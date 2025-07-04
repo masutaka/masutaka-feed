@@ -7,14 +7,14 @@ const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const lambdaClient = new LambdaClient({});
 
 interface GitHubFeedItem {
-  id?: string;
-  guid?: string;
-  title?: string;
-  link?: string;
-  pubDate?: string;
-  // Atom特有のフィールド
-  published?: string;
-  updated?: string;
+  id: string;
+  pubDate: string;
+  isoDate: string;
+  link: string;
+  title: string;
+  author: string;
+  content: string;
+  contentSnippet: string;
 }
 
 interface DirectInvokeEvent {
@@ -40,7 +40,7 @@ export const handler = async (): Promise<void> => {
     console.info(`Processing ${feed.items.length} feed items`);
 
     for (const item of feed.items) {
-      const entryId = item.id || item.guid || item.link;
+      const entryId = item.id;
       if (!entryId) {
         console.warn('Skipping item without ID:', item);
         continue;
@@ -82,8 +82,8 @@ const processNewEntry = async (
   console.info(`Processing new entry: ${entryId}`);
 
   const payload: DirectInvokeEvent = {
-    entryTitle: item.title || '',
-    entryUrl: item.link || ''
+    entryTitle: item.title,
+    entryUrl: item.link
   };
 
   try {
