@@ -53,7 +53,7 @@ deploy: build
 		PushoverUserKey=$$PUSHOVER_USER_KEY \
 		MastodonUrl=$$MASTODON_URL \
 		MastodonAccessToken=$$MASTODON_ACCESS_TOKEN \
-		GitHubFeedUrl=$$GITHUB_FEED_URL \
+		GitHubFeedUrl=$$GH_FEED_URL \
 		HatebuFeedUrl=$$HATEBU_FEED_URL
 
 # .PHONY: destroy
