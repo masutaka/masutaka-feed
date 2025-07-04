@@ -49,26 +49,7 @@ export const handler = async (): Promise<void> => {
       const isNew = await checkIfNewEntry(entryId, tableName);
 
       if (isNew) {
-        console.info(`Processing new entry: ${entryId}`);
-
-        const payload: DirectInvokeEvent = {
-          entryTitle: item.title || '',
-          entryUrl: item.link || ''
-        };
-
-        try {
-          await lambdaClient.send(new InvokeCommand({
-            FunctionName: targetFunctionArn,
-            InvocationType: 'RequestResponse',
-            Payload: Buffer.from(JSON.stringify(payload))
-          }));
-
-          await markAsProcessed(entryId, item, tableName);
-          console.info(`Successfully processed entry: ${entryId}`);
-        } catch (error) {
-          console.error(`Failed to process entry ${entryId}:`, error);
-          throw error;
-        }
+        await processNewEntry(entryId, item, targetFunctionArn, tableName);
       }
     }
 
@@ -88,6 +69,29 @@ async function checkIfNewEntry(entryId: string, tableName: string): Promise<bool
     return !result.Item;
   } catch (error) {
     console.error(`Error checking entry ${entryId}:`, error);
+    throw error;
+  }
+}
+
+async function processNewEntry(entryId: string, item: GitHubFeedItem, targetFunctionArn: string, tableName: string): Promise<void> {
+  console.info(`Processing new entry: ${entryId}`);
+
+  const payload: DirectInvokeEvent = {
+    entryTitle: item.title || '',
+    entryUrl: item.link || ''
+  };
+
+  try {
+    await lambdaClient.send(new InvokeCommand({
+      FunctionName: targetFunctionArn,
+      InvocationType: 'RequestResponse',
+      Payload: Buffer.from(JSON.stringify(payload))
+    }));
+
+    await markAsProcessed(entryId, item, tableName);
+    console.info(`Successfully processed entry: ${entryId}`);
+  } catch (error) {
+    console.error(`Failed to process entry ${entryId}:`, error);
     throw error;
   }
 }
