@@ -45,16 +45,16 @@ build:
 .PHONY: deploy
 deploy: build
 	@$(SAM) deploy --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides \
+		GitHubFeedUrl=$$GH_FEED_URL \
 		GithubMyAccessToken=$$GH_MY_ACCESS_TOKEN \
 		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
 		GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP \
+		HatebuFeedUrl=$$HATEBU_FEED_URL \
 		HatebuMyAccessToken=$$HATEBU_MY_ACCESS_TOKEN \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
 		PushoverUserKey=$$PUSHOVER_USER_KEY \
 		MastodonUrl=$$MASTODON_URL \
-		MastodonAccessToken=$$MASTODON_ACCESS_TOKEN \
-		GitHubFeedUrl=$$GH_FEED_URL \
-		HatebuFeedUrl=$$HATEBU_FEED_URL
+		MastodonAccessToken=$$MASTODON_ACCESS_TOKEN
 
 # .PHONY: destroy
 # destroy:

@@ -327,12 +327,20 @@ Resources:
       TreatMissingData: ignore
 
 Parameters:
+  GitHubFeedUrl:
+    Type: String
+    Description: "GitHub feed URL with token"
+    NoEcho: true
   GithubMyAccessToken:
     Type: String
   GithubTitleIgnoreRegexp:
     Type: String
   GithubTitlePushoverRegexp:
     Type: String
+  HatebuFeedUrl:
+    Type: String
+    Description: "Hatebu feed URL with key"
+    NoEcho: true
   HatebuMyAccessToken:
     Type: String
   PushoverAppToken:
@@ -343,14 +351,6 @@ Parameters:
     Type: String
   MastodonAccessToken:
     Type: String
-  GitHubFeedUrl:
-    Type: String
-    Description: "GitHub feed URL with token"
-    NoEcho: true
-  HatebuFeedUrl:
-    Type: String
-    Description: "Hatebu feed URL with key"
-    NoEcho: true
 
 Outputs:
   # ServerlessHttpApi is an implicit API created out of Events key under Serverless::Function
