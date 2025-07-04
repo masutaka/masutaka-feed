@@ -164,7 +164,7 @@ Resources:
           - index.ts
     Properties:
       CodeUri: github/notifier/
-      Description: Managed by AWS SAM
+      Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
           GITHUB_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
@@ -186,7 +186,7 @@ Resources:
           - index.ts
     Properties:
       CodeUri: hatebu/notifier/
-      Description: Managed by AWS SAM
+      Description: Hatebu feed notifier Lambda function
       Environment:
         Variables:
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
