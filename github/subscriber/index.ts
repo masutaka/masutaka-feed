@@ -50,6 +50,8 @@ export const handler = async (): Promise<void> => {
 
       if (isNew) {
         await processNewEntry(entryId, item, targetFunctionArn, tableName);
+      } else {
+        console.info(`Skipping already processed entry: ${entryId}`);
       }
     }
 
