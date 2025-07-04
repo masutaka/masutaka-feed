@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Managed by AWS SAM
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -334,15 +334,58 @@ Parameters:
     NoEcho: true
 
 Outputs:
+  # EventBridge Schedulers
+  GitHubFeedScheduler:
+    Description: "GitHub Feed Scheduler ARN"
+    Value: !Ref GitHubFeedScheduler
+  HatebuFeedScheduler:
+    Description: "Hatebu Feed Scheduler ARN"
+    Value: !Ref HatebuFeedScheduler
+
+  # EventBridge Scheduler IAM Roles
+  GitHubSchedulerRole:
+    Description: "GitHub Scheduler IAM Role ARN"
+    Value: !GetAtt GitHubSchedulerRole.Arn
+  HatebuSchedulerRole:
+    Description: "Hatebu Scheduler IAM Role ARN"
+    Value: !GetAtt HatebuSchedulerRole.Arn
+
+  # Feed Subscriber Functions
+  GitHubFeedSubscriberFunction:
+    Description: "GitHub Feed Subscriber Lambda Function ARN"
+    Value: !GetAtt GitHubFeedSubscriberFunction.Arn
+  HatebuFeedSubscriberFunction:
+    Description: "Hatebu Feed Subscriber Lambda Function ARN"
+    Value: !GetAtt HatebuFeedSubscriberFunction.Arn
+
+  # Feed Subscriber Function IAM Roles
+  GitHubFeedSubscriberFunctionIamRole:
+    Description: "Implicit IAM Role created for GitHub Feed Subscriber function"
+    Value: !GetAtt GitHubFeedSubscriberFunctionRole.Arn
+  HatebuFeedSubscriberFunctionIamRole:
+    Description: "Implicit IAM Role created for Hatebu Feed Subscriber function"
+    Value: !GetAtt HatebuFeedSubscriberFunctionRole.Arn
+
+  # DynamoDB Tables
+  GitHubStateTable:
+    Description: "GitHub State DynamoDB Table Name"
+    Value: !Ref GitHubStateTable
+  HatebuStateTable:
+    Description: "Hatebu State DynamoDB Table Name"
+    Value: !Ref HatebuStateTable
+
+  # Feed Notifier Functions
   GithubFunction:
     Description: "Github Lambda Function ARN"
     Value: !GetAtt GithubFunction.Arn
-  GithubFunctionIamRole:
-    Description: "Implicit IAM Role created for Github function"
-    Value: !GetAtt GithubFunctionRole.Arn
   HatebuFunction:
     Description: "Hatebu Lambda Function ARN"
     Value: !GetAtt HatebuFunction.Arn
+
+  # Feed Notifier Function IAM Roles
+  GithubFunctionIamRole:
+    Description: "Implicit IAM Role created for Github function"
+    Value: !GetAtt GithubFunctionRole.Arn
   HatebuFunctionIamRole:
     Description: "Implicit IAM Role created for Hatebu function"
     Value: !GetAtt HatebuFunctionRole.Arn
