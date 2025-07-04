@@ -1,5 +1,5 @@
 import { createRestAPIClient } from 'masto';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 
 // pushover-notificationsをrequireで読み込み
 const PushoverLib = require('pushover-notifications') as typeof Pushover;
@@ -28,7 +28,6 @@ declare class Pushover {
 
 // 環境変数の型定義
 interface EnvironmentVariables {
-  MY_ACCESS_TOKEN: string;
   MASTODON_URL: string;
   MASTODON_ACCESS_TOKEN: string;
   GITHUB_TITLE_IGNORE_REGEXP?: string;
@@ -56,7 +55,6 @@ const getOptionalEnvVar = (key: keyof EnvironmentVariables): string | undefined 
   return process.env[key];
 };
 
-const MY_ACCESS_TOKEN = getEnvVar('MY_ACCESS_TOKEN');
 const MASTODON_URL = getEnvVar('MASTODON_URL');
 const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 const PUSHOVER_USER_KEY = getOptionalEnvVar('PUSHOVER_USER_KEY');
@@ -71,81 +69,14 @@ const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_IG
 const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP') || '');
 
 export const handler = async (
-  event: APIGatewayProxyEvent | DirectInvokeEvent,
+  event: DirectInvokeEvent,
   context: Context
-): Promise<APIGatewayProxyResult | void> => {
-  console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN || '', '********'));
+): Promise<void> => {
+  console.log('event ->', JSON.stringify(event));
   console.log('context ->', JSON.stringify(context));
 
-  // 呼び出し元の判定
-  const isDirect = !('httpMethod' in event);
-
-  if (isDirect) {
-    // Lambda直接呼び出しの場合
-    const { entryTitle, entryUrl } = event as DirectInvokeEvent;
-    return await processEntry(entryTitle, entryUrl);
-  } else {
-    // API Gateway経由の場合（後方互換性）
-    const apiEvent = event as APIGatewayProxyEvent;
-    const eventBody = apiEvent.body;
-    
-    if (!eventBody) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Event body is missing' })
-      };
-    }
-
-    const accessToken = getAccessToken(eventBody);
-    if (accessToken != MY_ACCESS_TOKEN) {
-      console.error(`Invalid token ${accessToken}`);
-      return {
-        statusCode: 401,
-        body: JSON.stringify({ error: 'Invalid token' })
-      };
-    }
-
-    const entryTitle = getEntryTitle(eventBody);
-    const entryUrl = getEntryUrl(eventBody);
-
-    try {
-      await processEntry(entryTitle, entryUrl);
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ message: 'Just posted or pushovered!' })
-      };
-    } catch (error) {
-      console.error('Error occurred:', error);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Failed to post or pushover...' })
-      };
-    }
-  }
-};
-
-const getAccessToken = (eventBody: string): string => {
-  const match = eventBody.match(/^accessToken: (.+)/);
-  if (!match) {
-    throw new Error('Access token not found in event body');
-  }
-  return match[1];
-};
-
-const getEntryTitle = (eventBody: string): string => {
-  const match = eventBody.match(/\nentryTitle: (.+)/);
-  if (!match) {
-    throw new Error('Entry title not found in event body');
-  }
-  return match[1];
-};
-
-const getEntryUrl = (eventBody: string): string => {
-  const match = eventBody.match(/\nentryUrl: (.+)/);
-  if (!match) {
-    throw new Error('Entry URL not found in event body');
-  }
-  return match[1];
+  const { entryTitle, entryUrl } = event;
+  return await processEntry(entryTitle, entryUrl);
 };
 
 const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
