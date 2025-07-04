@@ -53,7 +53,7 @@ export default [
       // コード品質ルール
       "complexity": ["warn", 10],
       "max-lines-per-function": ["warn", {
-        "max": 60,
+        "max": 50,
         "skipBlankLines": true,
         "skipComments": true
       }],
