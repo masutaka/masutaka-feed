@@ -7,16 +7,14 @@ const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const lambdaClient = new LambdaClient({});
 
 interface HatebuFeedItem {
-  guid?: string;
-  title?: string;
-  link?: string;
-  pubDate?: string;
-  creator?: string;
-  'content:encoded'?: string;
-  contentSnippet?: string;
-  // RSS 1.0/RDF特有のフィールド
-  'dc:creator'?: string;
-  'dc:date'?: string;
+  'rdf:about': string;
+  title: string;
+  link: string;
+  description?: string;
+  'dc:creator': string;
+  'dc:date': string;
+  'content:encoded': string;
+  'hatena:bookmarkcount'?: string;
 }
 
 interface DirectInvokeEvent {
@@ -44,7 +42,7 @@ export const handler = async (): Promise<void> => {
     console.info(`Processing ${feed.items.length} feed items`);
 
     for (const item of feed.items) {
-      const entryId = item.guid || item.link;
+      const entryId = item['rdf:about'];
       if (!entryId) {
         console.warn('Skipping item without ID:', item);
         continue;
@@ -86,10 +84,10 @@ const processNewEntry = async (
   console.info(`Processing new entry: ${entryId}`);
 
   const payload: DirectInvokeEvent = {
-    entryAuthor: item.creator || item['dc:creator'] || '',
-    entryTitle: item.title || '',
-    entryUrl: item.link || '',
-    entryContent: item['content:encoded'] || item.contentSnippet || ''
+    entryAuthor: item['dc:creator'],
+    entryTitle: item.title,
+    entryUrl: item.link,
+    entryContent: item['content:encoded']
   };
 
   try {
