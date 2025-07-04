@@ -9,36 +9,67 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
-  # DynamoDB Tables
-  GitHubStateTable:
-    Type: AWS::DynamoDB::Table
+  # EventBridge Schedulers
+  GitHubFeedScheduler:
+    Type: AWS::Scheduler::Schedule
     Properties:
-      TableName: masutaka-feed-github-state
-      BillingMode: PAY_PER_REQUEST
-      KeySchema:
-        - AttributeName: entry_id
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: entry_id
-          AttributeType: S
-      TimeToLiveSpecification:
-        AttributeName: ttl
-        Enabled: true
+      Name: github-feed-subscriber-schedule
+      ScheduleExpression: "rate(5 minutes)"
+      Target:
+        Arn: !GetAtt GitHubFeedSubscriberFunction.Arn
+        RoleArn: !GetAtt GitHubSchedulerRole.Arn
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: "ENABLED"
+  HatebuFeedScheduler:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: hatebu-feed-subscriber-schedule
+      ScheduleExpression: "rate(15 minutes)"
+      Target:
+        Arn: !GetAtt HatebuFeedSubscriberFunction.Arn
+        RoleArn: !GetAtt HatebuSchedulerRole.Arn
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: "ENABLED"
 
-  HatebuStateTable:
-    Type: AWS::DynamoDB::Table
+  # EventBridge Scheduler IAM Roles
+  GitHubSchedulerRole:
+    Type: AWS::IAM::Role
     Properties:
-      TableName: masutaka-feed-hatebu-state
-      BillingMode: PAY_PER_REQUEST
-      KeySchema:
-        - AttributeName: entry_id
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: entry_id
-          AttributeType: S
-      TimeToLiveSpecification:
-        AttributeName: ttl
-        Enabled: true
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt GitHubFeedSubscriberFunction.Arn
+  HatebuSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt HatebuFeedSubscriberFunction.Arn
 
   # Feed Subscriber Lambda Functions
   GitHubFeedSubscriberFunction:
@@ -65,7 +96,6 @@ Resources:
             TableName: !Ref GitHubStateTable
         - LambdaInvokePolicy:
             FunctionName: !Ref GithubFunction
-
   HatebuFeedSubscriberFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -91,71 +121,37 @@ Resources:
         - LambdaInvokePolicy:
             FunctionName: !Ref HatebuFunction
 
-  # EventBridge Scheduler IAM Roles
-  GitHubSchedulerRole:
-    Type: AWS::IAM::Role
+  # DynamoDB Tables
+  GitHubStateTable:
+    Type: AWS::DynamoDB::Table
     Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: scheduler.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: lambda:InvokeFunction
-                Resource: !GetAtt GitHubFeedSubscriberFunction.Arn
-
-  HatebuSchedulerRole:
-    Type: AWS::IAM::Role
+      TableName: masutaka-feed-github-state
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: entry_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: entry_id
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+  HatebuStateTable:
+    Type: AWS::DynamoDB::Table
     Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: scheduler.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: lambda:InvokeFunction
-                Resource: !GetAtt HatebuFeedSubscriberFunction.Arn
+      TableName: masutaka-feed-hatebu-state
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: entry_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: entry_id
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 
-  # EventBridge Schedulers
-  GitHubFeedScheduler:
-    Type: AWS::Scheduler::Schedule
-    Properties:
-      Name: github-feed-subscriber-schedule
-      ScheduleExpression: "rate(5 minutes)"
-      Target:
-        Arn: !GetAtt GitHubFeedSubscriberFunction.Arn
-        RoleArn: !GetAtt GitHubSchedulerRole.Arn
-      FlexibleTimeWindow:
-        Mode: "OFF"
-      State: "ENABLED"
-
-  HatebuFeedScheduler:
-    Type: AWS::Scheduler::Schedule
-    Properties:
-      Name: hatebu-feed-subscriber-schedule
-      ScheduleExpression: "rate(15 minutes)"
-      Target:
-        Arn: !GetAtt HatebuFeedSubscriberFunction.Arn
-        RoleArn: !GetAtt HatebuSchedulerRole.Arn
-      FlexibleTimeWindow:
-        Mode: "OFF"
-      State: "ENABLED"
-
-  # Existing Lambda Functions
+  # Feed Notifier Lambda Functions
   GithubFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -198,42 +194,6 @@ Resources:
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
       Timeout: 180 # seconds (default: 3)
-  GithubFunctionAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
-      AlarmDescription: Any errors occurred in masutaka-feed-GithubFunction
-      AlarmName: masutaka-feed-GithubFunction-errors
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref GithubFunction
-      EvaluationPeriods: 1
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 900 # 15 minutes
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: ignore
-  HatebuFunctionAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
-      AlarmDescription: Any errors occurred in masutaka-feed-HatebuFunction
-      AlarmName: masutaka-feed-HatebuFunction-errors
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref HatebuFunction
-      EvaluationPeriods: 1
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 900 # 15 minutes
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: ignore
 
   # Feed Subscriber Alarms
   GitHubFeedSubscriberErrorAlarm:
@@ -254,7 +214,6 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
-
   HatebuFeedSubscriberErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -273,7 +232,6 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
-
   GitHubFeedSubscriberDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -292,7 +250,6 @@ Resources:
       Statistic: Average
       Threshold: 10000  # 10 seconds
       TreatMissingData: ignore
-
   HatebuFeedSubscriberDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -310,6 +267,45 @@ Resources:
       Period: 900
       Statistic: Average
       Threshold: 20000  # 20 seconds
+      TreatMissingData: ignore
+
+  # Feed Notifier Alarms
+  GithubFunctionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in masutaka-feed-GithubFunction
+      AlarmName: masutaka-feed-GithubFunction-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GithubFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 900 # 15 minutes
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+
+  HatebuFunctionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in masutaka-feed-HatebuFunction
+      AlarmName: masutaka-feed-HatebuFunction-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 900 # 15 minutes
+      Statistic: Sum
+      Threshold: 0
       TreatMissingData: ignore
 
 Parameters:
