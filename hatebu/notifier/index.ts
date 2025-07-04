@@ -61,7 +61,12 @@ const getHatebuCommentFromContent = (entryContent: string): string => {
     .replace(/&amp;/g, '&');
 };
 
-const processEntry = async (entryAuthor: string, entryTitle: string, entryUrl: string, entryContent: string): Promise<void> => {
+const processEntry = async (
+  entryAuthor: string,
+  entryTitle: string,
+  entryUrl: string,
+  entryContent: string
+): Promise<void> => {
   console.log(`entryAuthor: ${entryAuthor}`);
   console.log(`entryTitle: ${entryTitle}`);
   console.log(`entryUrl: ${entryUrl}`);

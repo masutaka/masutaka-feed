@@ -1,5 +1,6 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
+import { format } from 'util';
 
 // pushover-notificationsをrequireで読み込み
 const PushoverLib = require('pushover-notifications') as typeof Pushover;
@@ -131,7 +132,12 @@ const sendPushover = async (entryTitle: string, entryUrl: string): Promise<any> 
     });
   }
 
-  return Promise.resolve(`Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`);
+  const skipMessage = format(
+    'Doesn\'t send to pushover because the entryTitle "%s" doesnot match with %s',
+    entryTitle,
+    GITHUB_TITLE_PUSHOVER_REGEXP
+  );
+  return Promise.resolve(skipMessage);
 };
 
 const getMessage = (entryTitle: string, entryUrl: string): string => {

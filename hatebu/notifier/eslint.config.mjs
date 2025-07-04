@@ -69,7 +69,11 @@ export default [
         "allow": ["info", "warn", "error", "log"]
       }],
       // 関数スタイルの統一
-      "func-style": ["error", "expression", { "allowArrowFunctions": true }]
+      "func-style": ["error", "expression", { "allowArrowFunctions": true }],
+      // 関数パラメータの改行
+      "function-paren-newline": ["error", "multiline-arguments"],
+      // 最大行長
+      "max-len": ["error", { "code": 120, "ignoreComments": true, "ignoreStrings": true }]
     }
   },
   {

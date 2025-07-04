@@ -73,7 +73,12 @@ const checkIfNewEntry = async (entryId: string, tableName: string): Promise<bool
   }
 };
 
-const processNewEntry = async (entryId: string, item: GitHubFeedItem, targetFunctionArn: string, tableName: string): Promise<void> => {
+const processNewEntry = async (
+  entryId: string,
+  item: GitHubFeedItem,
+  targetFunctionArn: string,
+  tableName: string
+): Promise<void> => {
   console.info(`Processing new entry: ${entryId}`);
 
   const payload: DirectInvokeEvent = {
