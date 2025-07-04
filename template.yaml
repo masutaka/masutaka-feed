@@ -333,6 +333,7 @@ Parameters:
     NoEcho: true
   GithubMyAccessToken:
     Type: String
+    NoEcho: true
   GithubTitleIgnoreRegexp:
     Type: String
   GithubTitlePushoverRegexp:
@@ -343,14 +344,18 @@ Parameters:
     NoEcho: true
   HatebuMyAccessToken:
     Type: String
+    NoEcho: true
   PushoverAppToken:
     Type: String
+    NoEcho: true
   PushoverUserKey:
     Type: String
+    NoEcho: true
   MastodonUrl:
     Type: String
   MastodonAccessToken:
     Type: String
+    NoEcho: true
 
 Outputs:
   # ServerlessHttpApi is an implicit API created out of Events key under Serverless::Function
