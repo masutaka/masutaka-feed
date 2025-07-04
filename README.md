@@ -12,21 +12,44 @@
 
 ```mermaid
 graph TD
-    A[GitHub private feed] --> B[IFTTT Pro]
-    B --> C[Amazon API Gateway]
-    C --> D[AWS Lambda]
-    D -->|filter| E[Mastodon]
-    D -->|filter| F[Pushover]
+    subgraph "Data Source"
+        A[/GitHub private feed/]
+    end
+
+    subgraph "AWS Infrastructure"
+        direction LR
+        G[EventBridge Scheduler<br/>every 5 minutes] -->|trigger| H[Feed Subscriber Lambda]
+        H -.->|read/write| I[(DynamoDB)]
+        H -->|invoke| D[Notifier Lambda]
+    end
+
+    E[Mastodon]
+    F[Pushover]
+
+    A -.->|pull| H
+    D -->|filtered post| E
+    D -->|filtered post| F
 ```
 
 ### hatebu/
 
 ```mermaid
 graph TD
-    A[はてブのお気に入り feed] --> B[IFTTT Pro]
-    B --> C[Amazon API Gateway]
-    C --> D[AWS Lambda]
-    D --> E[Mastodon]
+    subgraph "Data Source"
+        A[/はてブのお気に入り feed/]
+    end
+
+    subgraph "AWS Infrastructure"
+        direction LR
+        G[EventBridge Scheduler<br/>every 15 minutes] -->|trigger| H[Feed Subscriber Lambda]
+        H -.->|read/write| I[(DynamoDB)]
+        H -->|invoke| D[Notifier Lambda]
+    end
+
+    E[Mastodon]
+
+    A -.->|pull| H
+    D -->|post| E
 ```
 
 ## Deployment
