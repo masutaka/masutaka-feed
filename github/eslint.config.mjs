@@ -77,7 +77,8 @@ export default [
       "build/**",
       "dist/**",
       "eslint.config.mjs",
-      "node_modules/**"
+      "node_modules/**",
+      "subscriber/**"
     ]
   }
 ];

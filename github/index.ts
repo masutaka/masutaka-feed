@@ -37,6 +37,12 @@ interface EnvironmentVariables {
   PUSHOVER_APP_TOKEN?: string;
 }
 
+// Lambda直接呼び出し用の型定義
+interface DirectInvokeEvent {
+  entryTitle: string;
+  entryUrl: string;
+}
+
 // 型安全な環境変数取得
 const getEnvVar = (key: keyof EnvironmentVariables): string => {
   const value = process.env[key];
@@ -65,68 +71,56 @@ const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_IG
 const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP') || '');
 
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEvent | DirectInvokeEvent,
   context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<APIGatewayProxyResult | void> => {
   console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN || '', '********'));
   console.log('context ->', JSON.stringify(context));
 
-  // eventBody is string which is the following format.
-  //
-  // accessToken: {{AccessToken}}  # <= It should be first
-  // entryTitle: {{EntryTitle}}
-  // entryUrl: {{EntryUrl}}
-  const eventBody = event.body;
-  
-  if (!eventBody) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Event body is missing' })
-    };
-  }
+  // 呼び出し元の判定
+  const isDirect = !('httpMethod' in event);
 
-  const accessToken = getAccessToken(eventBody);
-  if (accessToken != MY_ACCESS_TOKEN) {
-    console.error(`Invalid token ${accessToken}`);
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: 'Invalid token' })
-    };
-  }
-
-  const entryTitle = getEntryTitle(eventBody);
-  console.log(`entryTitle: ${entryTitle}`);
-
-  if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
-    console.info(`[GH] Ignore "${entryTitle}"`);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Ignored by filter' })
-    };
-  }
-
-  const entryUrl = getEntryUrl(eventBody);
-  console.log(`entryUrl: ${entryUrl}`);
-
-  try {
-    const [mastodon, pushover] = await Promise.all([
-      postToMastodon(entryTitle, entryUrl), 
-      sendPushover(entryTitle, entryUrl)
-    ]);
+  if (isDirect) {
+    // Lambda直接呼び出しの場合
+    const { entryTitle, entryUrl } = event as DirectInvokeEvent;
+    return await processEntry(entryTitle, entryUrl);
+  } else {
+    // API Gateway経由の場合（後方互換性）
+    const apiEvent = event as APIGatewayProxyEvent;
+    const eventBody = apiEvent.body;
     
-    console.info('[Mastodon] response ->', JSON.stringify(mastodon));
-    console.info('[Pushover] response ->', JSON.stringify(pushover));
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Just posted or pushovered!' })
-    };
-  } catch (error) {
-    console.error('Error occurred:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to post or pushover...' })
-    };
+    if (!eventBody) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Event body is missing' })
+      };
+    }
+
+    const accessToken = getAccessToken(eventBody);
+    if (accessToken != MY_ACCESS_TOKEN) {
+      console.error(`Invalid token ${accessToken}`);
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Invalid token' })
+      };
+    }
+
+    const entryTitle = getEntryTitle(eventBody);
+    const entryUrl = getEntryUrl(eventBody);
+
+    try {
+      await processEntry(entryTitle, entryUrl);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Just posted or pushovered!' })
+      };
+    } catch (error) {
+      console.error('Error occurred:', error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to post or pushover...' })
+      };
+    }
   }
 };
 
@@ -154,6 +148,28 @@ const getEntryUrl = (eventBody: string): string => {
   return match[1];
 };
 
+const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
+  console.log(`entryTitle: ${entryTitle}`);
+  console.log(`entryUrl: ${entryUrl}`);
+
+  if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
+    console.info(`[GH] Ignore "${entryTitle}"`);
+    return;
+  }
+
+  try {
+    const [mastodon, pushover] = await Promise.all([
+      postToMastodon(entryTitle, entryUrl), 
+      sendPushover(entryTitle, entryUrl)
+    ]);
+    
+    console.info('[Mastodon] response ->', JSON.stringify(mastodon));
+    console.info('[Pushover] response ->', JSON.stringify(pushover));
+  } catch (error) {
+    console.error('Error occurred:', error);
+    throw error;
+  }
+};
 
 const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any> => {
   try {

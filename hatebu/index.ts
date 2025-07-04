@@ -10,6 +10,14 @@ interface EnvironmentVariables {
   MASTODON_ACCESS_TOKEN: string;
 }
 
+// Lambda直接呼び出し用の型定義
+interface DirectInvokeEvent {
+  entryAuthor: string;
+  entryTitle: string;
+  entryUrl: string;
+  entryContent: string;
+}
+
 // 型安全な環境変数取得
 const getEnvVar = (key: keyof EnvironmentVariables): string => {
   const value = process.env[key];
@@ -24,65 +32,58 @@ const MASTODON_URL = getEnvVar('MASTODON_URL');
 const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEvent | DirectInvokeEvent,
   context: Context
-): Promise<APIGatewayProxyResult> => {
+): Promise<APIGatewayProxyResult | void> => {
   console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN, '********'));
   console.log('context ->', JSON.stringify(context));
 
-  // eventBody is string which is the following format.
-  //
-  // accessToken: {{AccessToken}}  # <= It should be first
-  // entryAuthor: {{EntryAuthor}}
-  // entryTitle: {{EntryTitle}}
-  // entryUrl: {{EntryUrl}}
-  // entryContent: {{EntryContent}} # <= It should be last
-  const eventBody = event.body;
-  
-  if (!eventBody) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Event body is missing' })
-    };
-  }
+  // 呼び出し元の判定
+  const isDirect = !('httpMethod' in event);
 
-  const accessToken = getAccessToken(eventBody);
-  if (accessToken != MY_ACCESS_TOKEN) {
-    console.error(`Invalid token ${accessToken}`);
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: 'Invalid token' })
-    };
-  }
-
-  const entryAuthor = getEntryAuthor(eventBody);
-  console.log(`entryAuthor: ${entryAuthor}`);
-
-  const entryTitle = getEntryTitle(eventBody);
-  console.log(`entryTitle: ${entryTitle}`);
-
-  const entryUrl = getEntryUrl(eventBody);
-  console.log(`entryUrl: ${entryUrl}`);
-
-  const hatebuComment = getHatebuComment(eventBody);
-  console.log(`hatebuComment: ${hatebuComment}`);
-
-  try {
-    const response = await postToMastodon({
-      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' '),
-    });
+  if (isDirect) {
+    // Lambda直接呼び出しの場合
+    const { entryAuthor, entryTitle, entryUrl, entryContent } = event as DirectInvokeEvent;
+    return await processEntry(entryAuthor, entryTitle, entryUrl, entryContent);
+  } else {
+    // API Gateway経由の場合（後方互換性）
+    const apiEvent = event as APIGatewayProxyEvent;
+    const eventBody = apiEvent.body;
     
-    console.info('response ->', JSON.stringify(response));
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Just posted!' })
-    };
-  } catch (error) {
-    console.error('error ->', JSON.stringify(error));
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to post...' })
-    };
+    if (!eventBody) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Event body is missing' })
+      };
+    }
+
+    const accessToken = getAccessToken(eventBody);
+    if (accessToken != MY_ACCESS_TOKEN) {
+      console.error(`Invalid token ${accessToken}`);
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Invalid token' })
+      };
+    }
+
+    const entryAuthor = getEntryAuthor(eventBody);
+    const entryTitle = getEntryTitle(eventBody);
+    const entryUrl = getEntryUrl(eventBody);
+    const hatebuComment = getHatebuComment(eventBody);
+
+    try {
+      await processEntry(entryAuthor, entryTitle, entryUrl, hatebuComment);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Just posted!' })
+      };
+    } catch (error) {
+      console.error('error ->', JSON.stringify(error));
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to post...' })
+      };
+    }
   }
 };
 
@@ -129,6 +130,10 @@ const getEntryContent = (eventBody: string): string => {
 
 const getHatebuComment = (eventBody: string): string => {
   const entryContent = getEntryContent(eventBody);
+  return getHatebuCommentFromContent(entryContent);
+};
+
+const getHatebuCommentFromContent = (entryContent: string): string => {
   console.log(`entryContent: ${entryContent}`);
 
   if (/<\/a> <\/p>$/.test(entryContent)) {
@@ -149,6 +154,25 @@ const getHatebuComment = (eventBody: string): string => {
     .replace(/&amp;/g, '&');
 };
 
+const processEntry = async (entryAuthor: string, entryTitle: string, entryUrl: string, entryContent: string): Promise<void> => {
+  console.log(`entryAuthor: ${entryAuthor}`);
+  console.log(`entryTitle: ${entryTitle}`);
+  console.log(`entryUrl: ${entryUrl}`);
+  
+  const hatebuComment = getHatebuCommentFromContent(entryContent);
+  console.log(`hatebuComment: ${hatebuComment}`);
+
+  try {
+    const response = await postToMastodon({
+      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' '),
+    });
+    
+    console.info('response ->', JSON.stringify(response));
+  } catch (error) {
+    console.error('error ->', JSON.stringify(error));
+    throw error;
+  }
+};
 
 interface PostToMastodonParams {
   status: string;
