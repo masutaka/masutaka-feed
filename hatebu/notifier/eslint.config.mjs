@@ -39,11 +39,9 @@ export default [
       "eol-last": ["error", "always"],
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "no-undef": "off",
       "@typescript-eslint/no-unused-vars": ["error", {
         "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_|^Pushover$"
+        "varsIgnorePattern": "^_"
       }],
       "no-unused-vars": "off",
       // Promise関連のルール
@@ -53,7 +51,7 @@ export default [
       // コード品質ルール
       "complexity": ["warn", 10],
       "max-lines-per-function": ["warn", {
-        "max": 60,
+        "max": 50,
         "skipBlankLines": true,
         "skipComments": true
       }],
@@ -77,8 +75,7 @@ export default [
       "build/**",
       "dist/**",
       "eslint.config.mjs",
-      "node_modules/**",
-      "subscriber/**"
+      "node_modules/**"
     ]
   }
 ];

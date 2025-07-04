@@ -167,7 +167,7 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      CodeUri: github/
+      CodeUri: github/notifier/
       Description: Managed by AWS SAM
       Events:
         Github:
@@ -196,7 +196,7 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      CodeUri: hatebu/
+      CodeUri: hatebu/notifier/
       Description: Managed by AWS SAM
       Events:
         Hatebu:

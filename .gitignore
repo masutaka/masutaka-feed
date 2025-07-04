@@ -1,7 +1,7 @@
 /.aws-sam
 /github/index.js
-/github/node_modules/
+/github/notifier/node_modules/
 /github/subscriber/node_modules/
 /hatebu/index.js
-/hatebu/node_modules/
+/hatebu/notifier/node_modules/
 /hatebu/subscriber/node_modules/
