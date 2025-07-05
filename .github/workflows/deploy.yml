@@ -34,10 +34,10 @@ jobs:
         use-installer: true
     - run: make deploy
       env:
-        GH_MY_ACCESS_TOKEN: ${{ secrets.GH_MY_ACCESS_TOKEN }}
+        GH_FEED_URL: ${{ secrets.GH_FEED_URL }}
         GH_TITLE_IGNORE_REGEXP: ${{ vars.GH_TITLE_IGNORE_REGEXP }}
         GH_TITLE_PUSHOVER_REGEXP: ${{ vars.GH_TITLE_PUSHOVER_REGEXP }}
-        HATEBU_MY_ACCESS_TOKEN: ${{ secrets.HATEBU_MY_ACCESS_TOKEN }}
+        HATEBU_FEED_URL: ${{ secrets.HATEBU_FEED_URL }}
         PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_APP_TOKEN }}
         PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
         MASTODON_URL: ${{ vars.MASTODON_URL }}

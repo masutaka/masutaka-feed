@@ -1,5 +1,6 @@
 import { createRestAPIClient } from 'masto';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { Context } from 'aws-lambda';
+import { format } from 'util';
 
 // pushover-notificationsをrequireで読み込み
 const PushoverLib = require('pushover-notifications') as typeof Pushover;
@@ -28,13 +29,18 @@ declare class Pushover {
 
 // 環境変数の型定義
 interface EnvironmentVariables {
-  MY_ACCESS_TOKEN: string;
   MASTODON_URL: string;
   MASTODON_ACCESS_TOKEN: string;
   GITHUB_TITLE_IGNORE_REGEXP?: string;
   GITHUB_TITLE_PUSHOVER_REGEXP?: string;
   PUSHOVER_USER_KEY?: string;
   PUSHOVER_APP_TOKEN?: string;
+}
+
+// Lambda直接呼び出し用の型定義
+interface DirectInvokeEvent {
+  entryTitle: string;
+  entryUrl: string;
 }
 
 // 型安全な環境変数取得
@@ -50,7 +56,6 @@ const getOptionalEnvVar = (key: keyof EnvironmentVariables): string | undefined 
   return process.env[key];
 };
 
-const MY_ACCESS_TOKEN = getEnvVar('MY_ACCESS_TOKEN');
 const MASTODON_URL = getEnvVar('MASTODON_URL');
 const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 const PUSHOVER_USER_KEY = getOptionalEnvVar('PUSHOVER_USER_KEY');
@@ -65,48 +70,24 @@ const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_IG
 const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP') || '');
 
 export const handler = async (
-  event: APIGatewayProxyEvent,
+  event: DirectInvokeEvent,
   context: Context
-): Promise<APIGatewayProxyResult> => {
-  console.log('event ->', JSON.stringify(event).replace(MY_ACCESS_TOKEN || '', '********'));
+): Promise<void> => {
+  console.log('event ->', JSON.stringify(event));
   console.log('context ->', JSON.stringify(context));
 
-  // eventBody is string which is the following format.
-  //
-  // accessToken: {{AccessToken}}  # <= It should be first
-  // entryTitle: {{EntryTitle}}
-  // entryUrl: {{EntryUrl}}
-  const eventBody = event.body;
-  
-  if (!eventBody) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Event body is missing' })
-    };
-  }
+  const { entryTitle, entryUrl } = event;
+  return await processEntry(entryTitle, entryUrl);
+};
 
-  const accessToken = getAccessToken(eventBody);
-  if (accessToken != MY_ACCESS_TOKEN) {
-    console.error(`Invalid token ${accessToken}`);
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: 'Invalid token' })
-    };
-  }
-
-  const entryTitle = getEntryTitle(eventBody);
+const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
   console.log(`entryTitle: ${entryTitle}`);
+  console.log(`entryUrl: ${entryUrl}`);
 
   if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
     console.info(`[GH] Ignore "${entryTitle}"`);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Ignored by filter' })
-    };
+    return;
   }
-
-  const entryUrl = getEntryUrl(eventBody);
-  console.log(`entryUrl: ${entryUrl}`);
 
   try {
     const [mastodon, pushover] = await Promise.all([
@@ -116,44 +97,11 @@ export const handler = async (
     
     console.info('[Mastodon] response ->', JSON.stringify(mastodon));
     console.info('[Pushover] response ->', JSON.stringify(pushover));
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Just posted or pushovered!' })
-    };
   } catch (error) {
     console.error('Error occurred:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to post or pushover...' })
-    };
+    throw error;
   }
 };
-
-const getAccessToken = (eventBody: string): string => {
-  const match = eventBody.match(/^accessToken: (.+)/);
-  if (!match) {
-    throw new Error('Access token not found in event body');
-  }
-  return match[1];
-};
-
-const getEntryTitle = (eventBody: string): string => {
-  const match = eventBody.match(/\nentryTitle: (.+)/);
-  if (!match) {
-    throw new Error('Entry title not found in event body');
-  }
-  return match[1];
-};
-
-const getEntryUrl = (eventBody: string): string => {
-  const match = eventBody.match(/\nentryUrl: (.+)/);
-  if (!match) {
-    throw new Error('Entry URL not found in event body');
-  }
-  return match[1];
-};
-
 
 const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any> => {
   try {
@@ -184,7 +132,12 @@ const sendPushover = async (entryTitle: string, entryUrl: string): Promise<any> 
     });
   }
 
-  return Promise.resolve(`Doesn't send to pushover because the entryTitle "${entryTitle}" doesnot match with ${GITHUB_TITLE_PUSHOVER_REGEXP}`);
+  const skipMessage = format(
+    'Doesn\'t send to pushover because the entryTitle "%s" doesnot match with %s',
+    entryTitle,
+    GITHUB_TITLE_PUSHOVER_REGEXP
+  );
+  return Promise.resolve(skipMessage);
 };
 
 const getMessage = (entryTitle: string, entryUrl: string): string => {

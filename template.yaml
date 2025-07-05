@@ -1,14 +1,184 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Managed by AWS SAM
-  
+
+Parameters:
+  GitHubFeedUrl:
+    Type: String
+    Description: "GitHub feed URL with token"
+    NoEcho: true
+  GithubTitleIgnoreRegexp:
+    Type: String
+  GithubTitlePushoverRegexp:
+    Type: String
+  HatebuFeedUrl:
+    Type: String
+    Description: "Hatebu feed URL with key"
+    NoEcho: true
+  PushoverAppToken:
+    Type: String
+    NoEcho: true
+  PushoverUserKey:
+    Type: String
+    NoEcho: true
+  MastodonUrl:
+    Type: String
+  MastodonAccessToken:
+    Type: String
+    NoEcho: true
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Handler: index.handler
     Runtime: nodejs22.x
+    Architectures:
+      - arm64
 
 Resources:
+  # EventBridge Schedulers
+  GitHubFeedScheduler:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: github-feed-subscriber-schedule
+      ScheduleExpression: "rate(5 minutes)"
+      Target:
+        Arn: !GetAtt GitHubFeedSubscriberFunction.Arn
+        RoleArn: !GetAtt GitHubSchedulerRole.Arn
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: "ENABLED"
+  HatebuFeedScheduler:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: hatebu-feed-subscriber-schedule
+      ScheduleExpression: "rate(15 minutes)"
+      Target:
+        Arn: !GetAtt HatebuFeedSubscriberFunction.Arn
+        RoleArn: !GetAtt HatebuSchedulerRole.Arn
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: "ENABLED"
+
+  # EventBridge Scheduler IAM Roles
+  GitHubSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt GitHubFeedSubscriberFunction.Arn
+  HatebuSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt HatebuFeedSubscriberFunction.Arn
+
+  # Feed Subscriber Lambda Functions
+  GitHubFeedSubscriberFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.ts
+    Properties:
+      CodeUri: github/subscriber/
+      Description: GitHub feed subscriber Lambda function
+      Environment:
+        Variables:
+          FEED_URL: !Ref GitHubFeedUrl
+          STATE_TABLE_NAME: !Ref GitHubStateTable
+          TARGET_FUNCTION_ARN: !GetAtt GithubFunction.Arn
+      Timeout: 60  # 1 minute
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GitHubStateTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref GithubFunction
+  HatebuFeedSubscriberFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - index.ts
+    Properties:
+      CodeUri: hatebu/subscriber/
+      Description: Hatebu feed subscriber Lambda function
+      Environment:
+        Variables:
+          FEED_URL: !Ref HatebuFeedUrl
+          STATE_TABLE_NAME: !Ref HatebuStateTable
+          TARGET_FUNCTION_ARN: !GetAtt HatebuFunction.Arn
+      Timeout: 60  # 1 minute
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref HatebuStateTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref HatebuFunction
+
+  # DynamoDB Tables
+  GitHubStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: masutaka-feed-github-state
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: entry_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: entry_id
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+  HatebuStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: masutaka-feed-hatebu-state
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: entry_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: entry_id
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # Feed Notifier Lambda Functions
   GithubFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -20,17 +190,10 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      CodeUri: github/
-      Description: Managed by AWS SAM
-      Events:
-        Github:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
-          Properties:
-            Path: /github
-            Method: post
+      CodeUri: github/notifier/
+      Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
-          MY_ACCESS_TOKEN: !Ref GithubMyAccessToken
           GITHUB_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
           GITHUB_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
@@ -49,22 +212,91 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      CodeUri: hatebu/
-      Description: Managed by AWS SAM
-      Events:
-        Hatebu:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#httpapi
-          Properties:
-            Path: /hatebu
-            Method: post
+      CodeUri: hatebu/notifier/
+      Description: Hatebu feed notifier Lambda function
       Environment:
         Variables:
-          MY_ACCESS_TOKEN: !Ref HatebuMyAccessToken
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
       Timeout: 180 # seconds (default: 3)
+
+  # Feed Subscriber Alarms
+  GitHubFeedSubscriberErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in github-feed-subscriber
+      AlarmName: github-feed-subscriber-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GitHubFeedSubscriberFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 300  # 5 minutes
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+  HatebuFeedSubscriberErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: Any errors occurred in hatebu-feed-subscriber
+      AlarmName: hatebu-feed-subscriber-errors
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuFeedSubscriberFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 900  # 15 minutes
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+  GitHubFeedSubscriberDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for github-feed-subscriber
+      AlarmName: github-feed-subscriber-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GitHubFeedSubscriberFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 300
+      Statistic: Average
+      Threshold: 10000  # 10 seconds
+      TreatMissingData: ignore
+  HatebuFeedSubscriberDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for hatebu-feed-subscriber
+      AlarmName: hatebu-feed-subscriber-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuFeedSubscriberFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 900
+      Statistic: Average
+      Threshold: 20000  # 20 seconds
+      TreatMissingData: ignore
+
+  # Feed Notifier Alarms
   GithubFunctionAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -83,6 +315,7 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
+
   HatebuFunctionAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -102,43 +335,59 @@ Resources:
       Threshold: 0
       TreatMissingData: ignore
 
-Parameters:
-  GithubMyAccessToken:
-    Type: String
-  GithubTitleIgnoreRegexp:
-    Type: String
-  GithubTitlePushoverRegexp:
-    Type: String
-  HatebuMyAccessToken:
-    Type: String
-  PushoverAppToken:
-    Type: String
-  PushoverUserKey:
-    Type: String
-  MastodonUrl:
-    Type: String
-  MastodonAccessToken:
-    Type: String
-
 Outputs:
-  # ServerlessHttpApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  GithubApi:
-    Description: "API Gateway endpoint URL for Github function"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/github/"
+  # EventBridge Schedulers
+  GitHubFeedScheduler:
+    Description: "GitHub Feed Scheduler ARN"
+    Value: !Ref GitHubFeedScheduler
+  HatebuFeedScheduler:
+    Description: "Hatebu Feed Scheduler ARN"
+    Value: !Ref HatebuFeedScheduler
+
+  # EventBridge Scheduler IAM Roles
+  GitHubSchedulerRole:
+    Description: "GitHub Scheduler IAM Role ARN"
+    Value: !GetAtt GitHubSchedulerRole.Arn
+  HatebuSchedulerRole:
+    Description: "Hatebu Scheduler IAM Role ARN"
+    Value: !GetAtt HatebuSchedulerRole.Arn
+
+  # Feed Subscriber Functions
+  GitHubFeedSubscriberFunction:
+    Description: "GitHub Feed Subscriber Lambda Function ARN"
+    Value: !GetAtt GitHubFeedSubscriberFunction.Arn
+  HatebuFeedSubscriberFunction:
+    Description: "Hatebu Feed Subscriber Lambda Function ARN"
+    Value: !GetAtt HatebuFeedSubscriberFunction.Arn
+
+  # Feed Subscriber Function IAM Roles
+  GitHubFeedSubscriberFunctionIamRole:
+    Description: "Implicit IAM Role created for GitHub Feed Subscriber function"
+    Value: !GetAtt GitHubFeedSubscriberFunctionRole.Arn
+  HatebuFeedSubscriberFunctionIamRole:
+    Description: "Implicit IAM Role created for Hatebu Feed Subscriber function"
+    Value: !GetAtt HatebuFeedSubscriberFunctionRole.Arn
+
+  # DynamoDB Tables
+  GitHubStateTable:
+    Description: "GitHub State DynamoDB Table Name"
+    Value: !Ref GitHubStateTable
+  HatebuStateTable:
+    Description: "Hatebu State DynamoDB Table Name"
+    Value: !Ref HatebuStateTable
+
+  # Feed Notifier Functions
   GithubFunction:
     Description: "Github Lambda Function ARN"
     Value: !GetAtt GithubFunction.Arn
-  GithubFunctionIamRole:
-    Description: "Implicit IAM Role created for Github function"
-    Value: !GetAtt GithubFunctionRole.Arn
-  HatebuApi:
-    Description: "API Gateway endpoint URL for Hatebu function"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/hatebu/"
   HatebuFunction:
     Description: "Hatebu Lambda Function ARN"
     Value: !GetAtt HatebuFunction.Arn
+
+  # Feed Notifier Function IAM Roles
+  GithubFunctionIamRole:
+    Description: "Implicit IAM Role created for Github function"
+    Value: !GetAtt GithubFunctionRole.Arn
   HatebuFunctionIamRole:
     Description: "Implicit IAM Role created for Hatebu function"
     Value: !GetAtt HatebuFunctionRole.Arn

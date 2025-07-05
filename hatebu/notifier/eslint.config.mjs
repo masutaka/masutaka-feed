@@ -39,11 +39,9 @@ export default [
       "eol-last": ["error", "always"],
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "no-undef": "off",
       "@typescript-eslint/no-unused-vars": ["error", {
         "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_|^Pushover$"
+        "varsIgnorePattern": "^_"
       }],
       "no-unused-vars": "off",
       // Promise関連のルール
@@ -53,7 +51,7 @@ export default [
       // コード品質ルール
       "complexity": ["warn", 10],
       "max-lines-per-function": ["warn", {
-        "max": 60,
+        "max": 50,
         "skipBlankLines": true,
         "skipComments": true
       }],
@@ -69,7 +67,13 @@ export default [
       // console使用の制限
       "no-console": ["warn", {
         "allow": ["info", "warn", "error", "log"]
-      }]
+      }],
+      // 関数スタイルの統一
+      "func-style": ["error", "expression", { "allowArrowFunctions": true }],
+      // 関数パラメータの改行
+      "function-paren-newline": ["error", "multiline-arguments"],
+      // 最大行長
+      "max-len": ["error", { "code": 120, "ignoreComments": true, "ignoreStrings": true }]
     }
   },
   {
