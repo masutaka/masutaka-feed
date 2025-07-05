@@ -2,6 +2,31 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Managed by AWS SAM
 
+Parameters:
+  GitHubFeedUrl:
+    Type: String
+    Description: "GitHub feed URL with token"
+    NoEcho: true
+  GithubTitleIgnoreRegexp:
+    Type: String
+  GithubTitlePushoverRegexp:
+    Type: String
+  HatebuFeedUrl:
+    Type: String
+    Description: "Hatebu feed URL with key"
+    NoEcho: true
+  PushoverAppToken:
+    Type: String
+    NoEcho: true
+  PushoverUserKey:
+    Type: String
+    NoEcho: true
+  MastodonUrl:
+    Type: String
+  MastodonAccessToken:
+    Type: String
+    NoEcho: true
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -307,31 +332,6 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
-
-Parameters:
-  GitHubFeedUrl:
-    Type: String
-    Description: "GitHub feed URL with token"
-    NoEcho: true
-  GithubTitleIgnoreRegexp:
-    Type: String
-  GithubTitlePushoverRegexp:
-    Type: String
-  HatebuFeedUrl:
-    Type: String
-    Description: "Hatebu feed URL with key"
-    NoEcho: true
-  PushoverAppToken:
-    Type: String
-    NoEcho: true
-  PushoverUserKey:
-    Type: String
-    NoEcho: true
-  MastodonUrl:
-    Type: String
-  MastodonAccessToken:
-    Type: String
-    NoEcho: true
 
 Outputs:
   # EventBridge Schedulers
