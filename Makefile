@@ -42,9 +42,12 @@ lint-tsc:
 build:
 	@$(SAM) build
 
+# ローカルで誤ってデプロイしづらいようにする
+DEPLOY_OPTIONS := $(if $(CI),,--no-confirm-changeset)
+
 .PHONY: deploy
 deploy: build
-	@$(SAM) deploy --no-confirm-changeset --no-fail-on-empty-changeset --parameter-overrides \
+	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
 		GitHubFeedUrl=$$GH_FEED_URL \
 		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
 		GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP \
