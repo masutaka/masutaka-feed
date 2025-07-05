@@ -25,7 +25,7 @@ AWS SAMを使用したサーバーレスアプリケーション。GitHubの活�
 - **subscriber/**: フィード購読とDynamoDBでの重複チェックを担当
 - **notifier/**: 外部サービス（Mastodon、Pushover）への投稿を担当
 
-すべてのLambda関数はNode.js 22で動作。TypeScriptで実装されており、esbuildでビルドされる。
+すべてのLambda関数はNode.js 22（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
 ### DynamoDBテーブル
 

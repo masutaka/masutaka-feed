@@ -32,6 +32,8 @@ Globals:
   Function:
     Handler: index.handler
     Runtime: nodejs22.x
+    Architectures:
+      - arm64
 
 Resources:
   # EventBridge Schedulers
