@@ -40,9 +40,9 @@ export const handler = async (): Promise<void> => {
     console.info(`Processing ${feed.items.length} feed items`);
 
     for (const item of feed.items) {
-      const entryId = item.id;
+      const entryId = item.id?.trim();
       if (!entryId) {
-        console.warn('Skipping item without ID:', item);
+        console.warn('Skipping item without ID or with empty ID:', item);
         continue;
       }
 

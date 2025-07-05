@@ -42,9 +42,9 @@ export const handler = async (): Promise<void> => {
     console.info(`Processing ${feed.items.length} feed items`);
 
     for (const item of feed.items) {
-      const entryId = item['rdf:about'];
+      const entryId = item['rdf:about']?.trim();
       if (!entryId) {
-        console.warn('Skipping item without ID:', item);
+        console.warn('Skipping item without ID or with empty ID:', item);
         continue;
       }
 
