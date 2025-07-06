@@ -23,3 +23,4 @@ jobs:
         title: "Failed ${{ github.repository }}'s workflow (${{ github.workflow }})"
         url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         priority: 1 # High
+        sound: "falling"
