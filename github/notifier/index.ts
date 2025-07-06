@@ -3,7 +3,7 @@ import { Context } from 'aws-lambda';
 import { format } from 'util';
 import { Pushover } from './pushover';
 
-// Lambda直接呼び出し用の型定義
+// github/subscriber/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryTitle: string;
   entryUrl: string;

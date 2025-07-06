@@ -1,7 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
 
-// Lambda直接呼び出し用の型定義
+// hatebu/subscriber/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryAuthor: string;
   entryTitle: string;

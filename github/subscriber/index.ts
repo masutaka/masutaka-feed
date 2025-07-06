@@ -14,6 +14,7 @@ interface GitHubFeedItem {
   contentSnippet: string;
 }
 
+// github/notifier/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryTitle: string;
   entryUrl: string;

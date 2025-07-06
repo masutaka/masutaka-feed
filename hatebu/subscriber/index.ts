@@ -14,6 +14,7 @@ interface HatebuFeedItem {
   'hatena:bookmarkcount'?: string;
 }
 
+// hatebu/notifier/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryAuthor: string;
   entryTitle: string;
