@@ -43,7 +43,7 @@ build:
 	@$(SAM) build
 
 # ローカルで誤ってデプロイしづらいようにする
-DEPLOY_OPTIONS := $(if $(CI),,--no-confirm-changeset)
+DEPLOY_OPTIONS := $(if $(CI),--no-confirm-changeset,)
 
 .PHONY: deploy
 deploy: build
