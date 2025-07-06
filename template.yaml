@@ -116,13 +116,13 @@ Resources:
         Variables:
           FEED_URL: !Ref GitHubFeedUrl
           STATE_TABLE_NAME: !Ref GitHubStateTable
-          TARGET_FUNCTION_ARN: !GetAtt GithubFunction.Arn
+          TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
       Timeout: 60  # 1 minute
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GitHubStateTable
         - LambdaInvokePolicy:
-            FunctionName: !Ref GithubFunction
+            FunctionName: !Ref GitHubNotifierFunction
   HatebuFeedSubscriberFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -140,13 +140,13 @@ Resources:
         Variables:
           FEED_URL: !Ref HatebuFeedUrl
           STATE_TABLE_NAME: !Ref HatebuStateTable
-          TARGET_FUNCTION_ARN: !GetAtt HatebuFunction.Arn
+          TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
       Timeout: 60  # 1 minute
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HatebuStateTable
         - LambdaInvokePolicy:
-            FunctionName: !Ref HatebuFunction
+            FunctionName: !Ref HatebuNotifierFunction
 
   # DynamoDB Tables
   GitHubStateTable:
@@ -179,7 +179,7 @@ Resources:
         Enabled: true
 
   # Feed Notifier Lambda Functions
-  GithubFunction:
+  GitHubNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
       BuildMethod: esbuild
@@ -190,6 +190,7 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-GithubFunction"
       CodeUri: github/notifier/
       Description: GitHub feed notifier Lambda function
       Environment:
@@ -201,7 +202,7 @@ Resources:
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
       Timeout: 180 # seconds (default: 3)
-  HatebuFunction:
+  HatebuNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
       BuildMethod: esbuild
@@ -212,6 +213,7 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-HatebuFunction"
       CodeUri: hatebu/notifier/
       Description: Hatebu feed notifier Lambda function
       Environment:
@@ -307,7 +309,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Ref GithubFunction
+          Value: !Ref GitHubNotifierFunction
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -326,7 +328,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Ref HatebuFunction
+          Value: !Ref HatebuNotifierFunction
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -379,15 +381,15 @@ Outputs:
   # Notifier Functions
   GitHubNotifierFunction:
     Description: "GitHub Notifier Lambda Function ARN"
-    Value: !GetAtt GithubFunction.Arn
+    Value: !GetAtt GitHubNotifierFunction.Arn
   HatebuNotifierFunction:
     Description: "Hatebu Notifier Lambda Function ARN"
-    Value: !GetAtt HatebuFunction.Arn
+    Value: !GetAtt HatebuNotifierFunction.Arn
 
   # Notifier Function IAM Roles
   GitHubNotifierFunctionIamRole:
     Description: "GitHub Notifier Lambda Function IAM Role ARN"
-    Value: !GetAtt GithubFunctionRole.Arn
+    Value: !GetAtt GitHubNotifierFunctionRole.Arn
   HatebuNotifierFunctionIamRole:
     Description: "Hatebu Notifier Lambda Function IAM Role ARN"
-    Value: !GetAtt HatebuFunctionRole.Arn
+    Value: !GetAtt HatebuNotifierFunctionRole.Arn
