@@ -376,18 +376,18 @@ Outputs:
     Description: "Hatebu State DynamoDB Table Name"
     Value: !Ref HatebuStateTable
 
-  # Feed Notifier Functions
-  GithubFunction:
-    Description: "Github Lambda Function ARN"
+  # Notifier Functions
+  GitHubNotifierFunction:
+    Description: "GitHub Notifier Lambda Function ARN"
     Value: !GetAtt GithubFunction.Arn
-  HatebuFunction:
-    Description: "Hatebu Lambda Function ARN"
+  HatebuNotifierFunction:
+    Description: "Hatebu Notifier Lambda Function ARN"
     Value: !GetAtt HatebuFunction.Arn
 
-  # Feed Notifier Function IAM Roles
-  GithubFunctionIamRole:
-    Description: "Implicit IAM Role created for Github function"
+  # Notifier Function IAM Roles
+  GitHubNotifierFunctionIamRole:
+    Description: "GitHub Notifier Lambda Function IAM Role ARN"
     Value: !GetAtt GithubFunctionRole.Arn
-  HatebuFunctionIamRole:
-    Description: "Implicit IAM Role created for Hatebu function"
+  HatebuNotifierFunctionIamRole:
+    Description: "Hatebu Notifier Lambda Function IAM Role ARN"
     Value: !GetAtt HatebuFunctionRole.Arn
