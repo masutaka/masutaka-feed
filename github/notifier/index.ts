@@ -61,20 +61,20 @@ const processEntry = async (entryTitle: string, entryUrl: string): Promise<void>
   }
 
   try {
-    const [mastodon, pushover] = await Promise.all([
-      postToMastodon(entryTitle, entryUrl), 
+    const [mastodonResponse, pushoverResponse] = await Promise.all([
+      postToMastodon(`[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`), 
       sendPushover(entryTitle, entryUrl)
     ]);
     
-    console.info('[Mastodon] response ->', JSON.stringify(mastodon));
-    console.info('[Pushover] response ->', JSON.stringify(pushover));
+    console.info('[Mastodon] response ->', JSON.stringify(mastodonResponse));
+    console.info('[Pushover] response ->', JSON.stringify(pushoverResponse));
   } catch (error) {
     console.error('Error occurred:', error);
     throw error;
   }
 };
 
-const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any> => {
+const postToMastodon = async (status: string): Promise<any> => {
   try {
     const masto = createRestAPIClient({
       url: MASTODON_URL,
@@ -82,10 +82,10 @@ const postToMastodon = async (entryTitle: string, entryUrl: string): Promise<any
     });
 
     return await masto.v1.statuses.create({
-      status: `[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`,
+      status: status,
     });
   } catch (error) {
-    console.error('[Mastodon] Failed to post', error);
+    console.error('Failed to post to Mastodon:', error);
     throw error;
   }
 };
