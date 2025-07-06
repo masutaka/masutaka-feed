@@ -45,7 +45,7 @@ export default [
       "no-undef": "off",
       "@typescript-eslint/no-unused-vars": ["error", {
         "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_|^Pushover$"
+        "varsIgnorePattern": "^_|^PushoverClass$"
       }],
       "no-unused-vars": "off",
       // Promise関連のルール

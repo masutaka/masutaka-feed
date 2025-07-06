@@ -1,27 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
 import { format } from 'util';
-const PushoverLib = require('pushover-notifications') as typeof Pushover;
-
-// Pushover型定義
-interface PushoverConfig {
-  user?: string;
-  token?: string;
-}
-
-interface PushoverMessage {
-  title: string;
-  message: string;
-  device?: string;
-  priority?: number;
-  sound?: string;
-}
-
-// pushover-notificationsの型定義
-declare class Pushover {
-  constructor(config: PushoverConfig);
-  send(message: PushoverMessage): Promise<any>;
-}
+import { Pushover } from './pushover';
 
 // Lambda直接呼び出し用の型定義
 interface DirectInvokeEvent {
@@ -55,7 +35,7 @@ const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 const PUSHOVER_USER_KEY = getEnvVar('PUSHOVER_USER_KEY');
 const PUSHOVER_APP_TOKEN = getEnvVar('PUSHOVER_APP_TOKEN');
 
-const PushoverClient = new PushoverLib({
+const PushoverClient = new Pushover({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
 });
