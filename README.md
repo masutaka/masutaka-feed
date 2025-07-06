@@ -18,17 +18,17 @@ graph TD
 
     subgraph "AWS Infrastructure"
         direction LR
-        G[EventBridge Scheduler<br/>every 5 minutes] -->|trigger| H[Feed Subscriber Lambda]
-        H -.->|read/write| I[(DynamoDB)]
-        H -->|invoke| D[Notifier Lambda]
+        G[EventBridge Scheduler<br/>every 5 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
+        H -.->|3: read/write| I[(DynamoDB)]
+        H -->|4: invoke| D[Notifier Lambda]
     end
 
     E[Mastodon]
     F[Pushover]
 
-    A -.->|pull| H
-    D -->|filtered post| E
-    D -->|filtered post| F
+    A -.->|2: pull| H
+    D -->|5: filtered post| E
+    D -->|6: filtered post| F
 ```
 
 ### hatebu/
@@ -41,15 +41,15 @@ graph TD
 
     subgraph "AWS Infrastructure"
         direction LR
-        G[EventBridge Scheduler<br/>every 15 minutes] -->|trigger| H[Feed Subscriber Lambda]
-        H -.->|read/write| I[(DynamoDB)]
-        H -->|invoke| D[Notifier Lambda]
+        G[EventBridge Scheduler<br/>every 15 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
+        H -.->|3: read/write| I[(DynamoDB)]
+        H -->|4: invoke| D[Notifier Lambda]
     end
 
     E[Mastodon]
 
-    A -.->|pull| H
-    D -->|post| E
+    A -.->|2: pull| H
+    D -->|5: post| E
 ```
 
 ## Deployment
