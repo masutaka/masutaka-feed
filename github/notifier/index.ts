@@ -31,10 +31,10 @@ declare class Pushover {
 interface EnvironmentVariables {
   MASTODON_URL: string;
   MASTODON_ACCESS_TOKEN: string;
-  GITHUB_TITLE_IGNORE_REGEXP?: string;
-  GITHUB_TITLE_PUSHOVER_REGEXP?: string;
-  PUSHOVER_USER_KEY?: string;
-  PUSHOVER_APP_TOKEN?: string;
+  GITHUB_TITLE_IGNORE_REGEXP: string;
+  GITHUB_TITLE_PUSHOVER_REGEXP: string;
+  PUSHOVER_USER_KEY: string;
+  PUSHOVER_APP_TOKEN: string;
 }
 
 // Lambda直接呼び出し用の型定義
@@ -52,22 +52,18 @@ const getEnvVar = (key: keyof EnvironmentVariables): string => {
   return value;
 };
 
-const getOptionalEnvVar = (key: keyof EnvironmentVariables): string | undefined => {
-  return process.env[key];
-};
-
 const MASTODON_URL = getEnvVar('MASTODON_URL');
 const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
-const PUSHOVER_USER_KEY = getOptionalEnvVar('PUSHOVER_USER_KEY');
-const PUSHOVER_APP_TOKEN = getOptionalEnvVar('PUSHOVER_APP_TOKEN');
+const PUSHOVER_USER_KEY = getEnvVar('PUSHOVER_USER_KEY');
+const PUSHOVER_APP_TOKEN = getEnvVar('PUSHOVER_APP_TOKEN');
 
 const PushoverClient = new PushoverLib({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
 });
 
-const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_IGNORE_REGEXP') || '');
-const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getOptionalEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP') || '');
+const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_IGNORE_REGEXP'));
+const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP'));
 
 export const handler = async (
   event: DirectInvokeEvent,
