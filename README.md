@@ -28,7 +28,7 @@ graph TD
 
     A -.->|2: pull| H
     D -->|5: filtered post| E
-    D -->|6: filtered post| F
+    D -->|5: filtered post| F
 ```
 
 ### hatebu/
