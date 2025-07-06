@@ -1,20 +1,18 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
 
-console.info('Loading function');
-
-// 環境変数の型定義
-interface EnvironmentVariables {
-  MASTODON_URL: string;
-  MASTODON_ACCESS_TOKEN: string;
-}
-
-// Lambda直接呼び出し用の型定義
+// hatebu/subscriber/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryAuthor: string;
   entryTitle: string;
   entryUrl: string;
   entryContent: string;
+}
+
+// 環境変数の型定義
+interface EnvironmentVariables {
+  MASTODON_URL: string;
+  MASTODON_ACCESS_TOKEN: string;
 }
 
 // 型安全な環境変数取得
@@ -75,24 +73,18 @@ const processEntry = async (
   console.log(`hatebuComment: ${hatebuComment}`);
 
   try {
-    const response = await postToMastodon({
-      status: `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' '),
-    });
+    const response = await postToMastodon(
+      `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
+    );
     
     console.info('response ->', JSON.stringify(response));
   } catch (error) {
-    console.error('error ->', JSON.stringify(error));
+    console.error('Error occurred:', error);
     throw error;
   }
 };
 
-interface PostToMastodonParams {
-  status: string;
-}
-
-const postToMastodon = async (params: PostToMastodonParams): Promise<any> => {
-  const { status } = params;
-
+const postToMastodon = async (status: string): Promise<any> => {
   try {
     const masto = createRestAPIClient({
       url: MASTODON_URL,

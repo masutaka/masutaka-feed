@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import typescript from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
+import stylistic from "@stylistic/eslint-plugin";
 
 export default [
   {
@@ -28,7 +29,8 @@ export default [
       }
     },
     plugins: {
-      "@typescript-eslint": typescript
+      "@stylistic": stylistic,
+      "@typescript-eslint": typescript,
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -75,7 +77,18 @@ export default [
       // 関数パラメータの改行
       "function-paren-newline": ["error", "multiline-arguments"],
       // 最大行長
-      "max-len": ["error", { "code": 120, "ignoreComments": true, "ignoreStrings": true }]
+      "max-len": ["error", { "code": 120, "ignoreComments": true, "ignoreStrings": true }],
+      // interface各メンバーのセミコロン必須化
+      "@stylistic/member-delimiter-style": ["error", {
+        "multiline": {
+          "delimiter": "semi",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "semi",
+          "requireLast": true
+        }
+      }]
     }
   },
   {

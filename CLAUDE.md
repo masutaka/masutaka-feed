@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 重要事項
+
+**コード実装後は、必ず以下の成功を確認すること：**
+
+```bash
+# TypeScriptとESLintのエラーがないことを確認
+make lint
+```
+
+**サブディレクトリでコマンドを実行する場合は、サブシェルで実行し、実行後に自動的にリポジトリ直下に戻ること：**
+
+```bash
+(cd github/notifier && "any command")
+```
+
 ## プロジェクト概要
 
 AWS SAMを使用したサーバーレスアプリケーション。GitHubの活動とはてブのお気に入りをMastodonとPushover（Pushoverは一部のみ）に投稿する。
@@ -69,15 +84,6 @@ make deploy
 
 # hatebu/subscriberでの作業
 (cd hatebu/subscriber && make setup)
-```
-
-## 重要：実装後の確認手順
-
-**コード実装後は、必ず以下の成功を確認すること：**
-
-```bash
-# TypeScriptとESLintのエラーがないことを確認
-make lint
 ```
 
 ## 開発のポイント
