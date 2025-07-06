@@ -3,9 +3,6 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dyn
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import Parser from 'rss-parser';
 
-const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const lambdaClient = new LambdaClient({});
-
 interface HatebuFeedItem {
   'rdf:about': string;
   title: string;
@@ -23,6 +20,9 @@ interface DirectInvokeEvent {
   entryUrl: string;
   entryContent: string;
 }
+
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const lambdaClient = new LambdaClient({});
 
 export const handler = async (): Promise<void> => {
   console.info('Starting Hatebu feed subscription');

@@ -3,9 +3,6 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dyn
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import Parser from 'rss-parser';
 
-const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const lambdaClient = new LambdaClient({});
-
 interface GitHubFeedItem {
   id: string;
   pubDate: string;
@@ -21,6 +18,9 @@ interface DirectInvokeEvent {
   entryTitle: string;
   entryUrl: string;
 }
+
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const lambdaClient = new LambdaClient({});
 
 export const handler = async (): Promise<void> => {
   console.info('Starting GitHub feed subscription');

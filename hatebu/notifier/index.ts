@@ -1,20 +1,18 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
 
-console.info('Loading function');
-
-// 環境変数の型定義
-interface EnvironmentVariables {
-  MASTODON_URL: string;
-  MASTODON_ACCESS_TOKEN: string;
-}
-
 // Lambda直接呼び出し用の型定義
 interface DirectInvokeEvent {
   entryAuthor: string;
   entryTitle: string;
   entryUrl: string;
   entryContent: string;
+}
+
+// 環境変数の型定義
+interface EnvironmentVariables {
+  MASTODON_URL: string;
+  MASTODON_ACCESS_TOKEN: string;
 }
 
 // 型安全な環境変数取得

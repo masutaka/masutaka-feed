@@ -1,11 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
 import { format } from 'util';
-
-// pushover-notificationsをrequireで読み込み
 const PushoverLib = require('pushover-notifications') as typeof Pushover;
-
-console.info('Loading function');
 
 // Pushover型定義
 interface PushoverConfig {
@@ -27,6 +23,12 @@ declare class Pushover {
   send(message: PushoverMessage): Promise<any>;
 }
 
+// Lambda直接呼び出し用の型定義
+interface DirectInvokeEvent {
+  entryTitle: string;
+  entryUrl: string;
+}
+
 // 環境変数の型定義
 interface EnvironmentVariables {
   MASTODON_URL: string;
@@ -35,12 +37,6 @@ interface EnvironmentVariables {
   GITHUB_TITLE_PUSHOVER_REGEXP: string;
   PUSHOVER_USER_KEY: string;
   PUSHOVER_APP_TOKEN: string;
-}
-
-// Lambda直接呼び出し用の型定義
-interface DirectInvokeEvent {
-  entryTitle: string;
-  entryUrl: string;
 }
 
 // 型安全な環境変数取得
@@ -52,6 +48,8 @@ const getEnvVar = (key: keyof EnvironmentVariables): string => {
   return value;
 };
 
+const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_IGNORE_REGEXP'));
+const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP'));
 const MASTODON_URL = getEnvVar('MASTODON_URL');
 const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 const PUSHOVER_USER_KEY = getEnvVar('PUSHOVER_USER_KEY');
@@ -61,9 +59,6 @@ const PushoverClient = new PushoverLib({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
 });
-
-const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_IGNORE_REGEXP'));
-const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP'));
 
 export const handler = async (
   event: DirectInvokeEvent,
