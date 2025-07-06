@@ -190,7 +190,6 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-GithubFunction"
       CodeUri: github/notifier/
       Description: GitHub feed notifier Lambda function
       Environment:
@@ -213,7 +212,6 @@ Resources:
         EntryPoints:
           - index.ts
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-HatebuFunction"
       CodeUri: hatebu/notifier/
       Description: Hatebu feed notifier Lambda function
       Environment:
