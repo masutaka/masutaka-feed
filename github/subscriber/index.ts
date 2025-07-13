@@ -4,13 +4,18 @@ import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import Parser from 'rss-parser';
 
 interface GitHubFeedItem {
-  id: string;
-  pubDate: string;
-  isoDate: string;
-  link: string;
-  title: string;
-  author: string;
-  content: string;
+  // masutaka.private.atom 定義
+
+                    // </entry>
+  id: string;       //   <id>...</id>
+  pubDate: string;  //   <published>...</published>
+  link: string;     //   <link type="text/html" rel="alternate" href="..."/>
+  title: string;    //   <title type="html">...</title>
+  author: string;   //   <author><name>...</name></author>
+  content: string;  //   <content type="html">...</content>
+                    // </entry>
+
+  // rss-parser が content から HTML タグを除去した純粋なテキストに変換する
   contentSnippet: string;
 }
 

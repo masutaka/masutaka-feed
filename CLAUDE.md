@@ -61,6 +61,9 @@ make lint
 # ESLintによる自動修正
 make fmt-eslint
 
+# SAMテンプレートの検証
+make validate
+
 # SAMビルド（esbuildでTypeScriptをトランスパイル）
 make build
 

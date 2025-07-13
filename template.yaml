@@ -27,11 +27,12 @@ Parameters:
     Type: String
     NoEcho: true
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+# More info about Globals: https://github.com/aws/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Handler: index.handler
     Runtime: nodejs22.x
+    MemorySize: 256  # MB (default: 128)
     Architectures:
       - arm64
 
@@ -117,7 +118,7 @@ Resources:
           FEED_URL: !Ref GitHubFeedUrl
           STATE_TABLE_NAME: !Ref GitHubStateTable
           TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
-      Timeout: 60  # 1 minute
+      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GitHubStateTable
@@ -141,7 +142,7 @@ Resources:
           FEED_URL: !Ref HatebuFeedUrl
           STATE_TABLE_NAME: !Ref HatebuStateTable
           TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
-      Timeout: 60  # 1 minute
+      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HatebuStateTable
