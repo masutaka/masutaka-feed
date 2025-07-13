@@ -31,7 +31,7 @@ export const handler = async (
   event: DirectInvokeEvent,
   _context: Context
 ): Promise<void> => {
-  console.info('Received event:', event);
+  console.info('Starting Hatebu notifier with event:', event);
 
   const { entryAuthor, entryComment, entryTitle, entryUrl } = event;
   return await processEntry(entryAuthor, entryComment, entryTitle, entryUrl);
@@ -44,16 +44,16 @@ const processEntry = async (
   entryTitle: string,
   entryUrl: string,
 ): Promise<void> => {
-  console.info(`Processing entry for Mastodon: ${entryUrl}`);
+  console.info(`Processing entry for Hatebu: ${entryUrl}`);
 
   try {
     const response = await postToMastodon(
       `[B!] id:${entryAuthor} ${entryComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
     );
-    
+
     console.info('Successfully posted to Mastodon:', response);
   } catch (error) {
-    console.error('Error occurred:', error);
+    console.error('Failed to process entry:', error);
     throw error;
   }
 };

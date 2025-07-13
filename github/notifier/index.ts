@@ -1,6 +1,5 @@
 import { createRestAPIClient } from 'masto';
 import { Context } from 'aws-lambda';
-import { format } from 'util';
 import { Pushover } from './pushover';
 
 // github/subscriber/index.ts の DirectInvokeEvent と合わせること
@@ -42,34 +41,34 @@ const PushoverClient = new Pushover({
 
 export const handler = async (
   event: DirectInvokeEvent,
-  context: Context
+  _context: Context
 ): Promise<void> => {
-  console.log('event ->', JSON.stringify(event));
-  console.log('context ->', JSON.stringify(context));
+  console.info('Starting GitHub notifier with event:', event);
 
   const { entryTitle, entryUrl } = event;
   return await processEntry(entryTitle, entryUrl);
 };
 
 const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
-  console.log(`entryTitle: ${entryTitle}`);
-  console.log(`entryUrl: ${entryUrl}`);
+  console.info(`Processing entry for GitHub: ${entryUrl}`);
 
   if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
-    console.info(`[GH] Ignore "${entryTitle}"`);
+    console.info(`Ignoring entry "${entryTitle}" (matched ${GITHUB_TITLE_IGNORE_REGEXP})`);
     return;
   }
 
+  const message = buildMessage(entryTitle, entryUrl);
+
   try {
     const [mastodonResponse, pushoverResponse] = await Promise.all([
-      postToMastodon(`[GH] ${entryTitle} ${getMessage(entryTitle, entryUrl)}`), 
-      sendPushover(entryTitle, entryUrl)
+      postToMastodon(`[GH] ${entryTitle} ${message}`),
+      sendPushover(entryTitle, message)
     ]);
-    
-    console.info('[Mastodon] response ->', JSON.stringify(mastodonResponse));
-    console.info('[Pushover] response ->', JSON.stringify(pushoverResponse));
+
+    console.info('Successfully posted to Mastodon:', mastodonResponse);
+    console.info('Successfully sent to Pushover:', pushoverResponse);
   } catch (error) {
-    console.error('Error occurred:', error);
+    console.error('Failed to process entry:', error);
     throw error;
   }
 };
@@ -90,28 +89,27 @@ const postToMastodon = async (status: string): Promise<any> => {
   }
 };
 
-const sendPushover = async (entryTitle: string, entryUrl: string): Promise<any> => {
-  const message = getMessage(entryTitle, entryUrl);
+const sendPushover = async (entryTitle: string, message: string): Promise<any> => {
+  if (!GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
+    console.info(`Skipping Pushover notification for "${entryTitle}" (no match with ${GITHUB_TITLE_PUSHOVER_REGEXP})`);
+    return Promise.resolve('Skipped Pushover notification');
+  }
 
-  if (GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
-    return PushoverClient.send({
+  try {
+    return await PushoverClient.send({
       title: entryTitle,
       message: message, // required
       device: 'Android',
       priority: 0,      // normal
       sound: 'gamelan',
     });
+  } catch (error) {
+    console.error('Failed to send to Pushover:', error);
+    throw error;
   }
-
-  const skipMessage = format(
-    'Doesn\'t send to pushover because the entryTitle "%s" doesnot match with %s',
-    entryTitle,
-    GITHUB_TITLE_PUSHOVER_REGEXP
-  );
-  return Promise.resolve(skipMessage);
 };
 
-const getMessage = (entryTitle: string, entryUrl: string): string => {
+const buildMessage = (entryTitle: string, entryUrl: string): string => {
   const found = entryTitle.match(/^([^ ]+) started following/);
 
   if (found) {
