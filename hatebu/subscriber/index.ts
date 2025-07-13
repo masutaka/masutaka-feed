@@ -4,14 +4,16 @@ import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import Parser from 'rss-parser';
 
 interface HatebuFeedItem {
-  'rdf:about': string;
-  title: string;
-  link: string;
-  description?: string;
-  'dc:creator': string;
-  'dc:date': string;
-  'content:encoded': string;
-  'hatena:bookmarkcount'?: string;
+  // favorite.rss 定義
+  'rdf:about': string;             // <item rdf:about="...">
+  title: string;                   // <title>...</title>
+  link: string;                    // <link>...</link>
+  description: string;             // <description>...</description>
+  'dc:creator': string;            // <dc:creator>...</dc:creator>
+  'dc:date': string;               // <dc:date>...</dc:date>
+  'hatena:bookmarkcount': string;  // <hatena:bookmarkcount>...</hatena:bookmarkcount>
+  'content:encoded': string;       // <content:encoded>...</content:encoded>
+                                   // </item>
 
   // rss-parser は RSS 1.0 形式の場合、<description> タグの内容を以下のフィールドに自動的に格納する:
   // - content: description の内容（HTML エンティティがデコードされる）
