@@ -38,8 +38,12 @@ lint-tsc:
 	@$(MAKE) -w -C hatebu/notifier lint-tsc
 	@$(MAKE) -w -C hatebu/subscriber lint-tsc
 
+.PHONY: validate
+validate:
+	@$(SAM) validate
+
 .PHONY: build
-build:
+build: validate
 	@$(SAM) build
 
 # ローカルで誤ってデプロイしづらいようにする
