@@ -4,9 +4,9 @@ import { Context } from 'aws-lambda';
 // hatebu/subscriber/index.ts の DirectInvokeEvent と合わせること
 interface DirectInvokeEvent {
   entryAuthor: string;
+  entryComment: string;
   entryTitle: string;
   entryUrl: string;
-  entryContent: string;
 }
 
 // 環境変数の型定義
@@ -34,47 +34,25 @@ export const handler = async (
   console.log('event ->', JSON.stringify(event));
   console.log('context ->', JSON.stringify(context));
 
-  const { entryAuthor, entryTitle, entryUrl, entryContent } = event;
-  return await processEntry(entryAuthor, entryTitle, entryUrl, entryContent);
+  const { entryAuthor, entryComment, entryTitle, entryUrl } = event;
+  return await processEntry(entryAuthor, entryComment, entryTitle, entryUrl);
 };
 
-const getHatebuCommentFromContent = (entryContent: string): string => {
-  console.log(`entryContent: ${entryContent}`);
-
-  if (/<\/a> <\/p>$/.test(entryContent)) {
-    return '';
-  }
-
-  const commentMatch = entryContent.match(/<\/a> ([^>]+)<\/p>$/);
-  if (!commentMatch) {
-    throw new Error('Hatebu comment not found in entry content');
-  }
-  
-  return commentMatch[1]
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&');
-};
 
 const processEntry = async (
   entryAuthor: string,
+  entryComment: string,
   entryTitle: string,
   entryUrl: string,
-  entryContent: string
 ): Promise<void> => {
   console.log(`entryAuthor: ${entryAuthor}`);
+  console.log(`entryComment: ${entryComment}`);
   console.log(`entryTitle: ${entryTitle}`);
   console.log(`entryUrl: ${entryUrl}`);
-  
-  const hatebuComment = getHatebuCommentFromContent(entryContent);
-  console.log(`hatebuComment: ${hatebuComment}`);
 
   try {
     const response = await postToMastodon(
-      `[B!] id:${entryAuthor} ${hatebuComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
+      `[B!] id:${entryAuthor} ${entryComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
     );
     
     console.info('response ->', JSON.stringify(response));
