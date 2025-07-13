@@ -29,10 +29,9 @@ const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
 
 export const handler = async (
   event: DirectInvokeEvent,
-  context: Context
+  _context: Context
 ): Promise<void> => {
-  console.log('event ->', JSON.stringify(event));
-  console.log('context ->', JSON.stringify(context));
+  console.info('Received event:', event);
 
   const { entryAuthor, entryComment, entryTitle, entryUrl } = event;
   return await processEntry(entryAuthor, entryComment, entryTitle, entryUrl);
@@ -45,17 +44,14 @@ const processEntry = async (
   entryTitle: string,
   entryUrl: string,
 ): Promise<void> => {
-  console.log(`entryAuthor: ${entryAuthor}`);
-  console.log(`entryComment: ${entryComment}`);
-  console.log(`entryTitle: ${entryTitle}`);
-  console.log(`entryUrl: ${entryUrl}`);
+  console.info(`Processing entry for Mastodon: ${entryUrl}`);
 
   try {
     const response = await postToMastodon(
       `[B!] id:${entryAuthor} ${entryComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
     );
     
-    console.info('response ->', JSON.stringify(response));
+    console.info('Successfully posted to Mastodon:', response);
   } catch (error) {
     console.error('Error occurred:', error);
     throw error;
