@@ -20,7 +20,7 @@ graph TD
         direction LR
         G[EventBridge Scheduler<br/>every 5 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
         H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: invoke| D[Notifier Lambda]
+        H -->|4: invoke<br/>if new items| D[Notifier Lambda]
     end
 
     E[Mastodon]
@@ -43,7 +43,7 @@ graph TD
         direction LR
         G[EventBridge Scheduler<br/>every 15 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
         H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: invoke| D[Notifier Lambda]
+        H -->|4: invoke<br/>if new items| D[Notifier Lambda]
     end
 
     E[Mastodon]
