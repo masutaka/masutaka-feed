@@ -19,3 +19,8 @@ updates:
       timezone: "Asia/Tokyo"
     ignore:
       - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
+    groups:
+      # Combine updates to the same package into a single PR
+      all-dependencies:
+        patterns:
+          - "*"
