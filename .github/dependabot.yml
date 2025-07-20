@@ -8,15 +8,9 @@ updates:
       time: "19:00"
       timezone: "Asia/Tokyo"
   - package-ecosystem: "npm"
-    directory: "/github"
-    schedule:
-      interval: "monthly"
-      time: "19:00"
-      timezone: "Asia/Tokyo"
-    ignore:
-      - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
-  - package-ecosystem: "npm"
-    directory: "/hatebu"
+    directories:
+      - "/github"
+      - "/hatebu"
     schedule:
       interval: "monthly"
       time: "19:00"
