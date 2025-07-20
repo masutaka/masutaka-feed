@@ -9,8 +9,10 @@ updates:
       timezone: "Asia/Tokyo"
   - package-ecosystem: "npm"
     directories:
-      - "/github"
-      - "/hatebu"
+      - "/github/notifier"
+      - "/github/subscriber"
+      - "/hatebu/notifier"
+      - "/hatebu/subscriber"
     schedule:
       interval: "monthly"
       time: "19:00"
