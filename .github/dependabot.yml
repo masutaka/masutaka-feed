@@ -19,3 +19,29 @@ updates:
       timezone: "Asia/Tokyo"
     ignore:
       - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
+    groups:
+      aws-sdk:
+        patterns:
+          - "@aws-sdk/*"
+      esbuild:
+        patterns:
+          - "esbuild"
+      eslint:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "@stylistic/eslint-plugin"
+          - "@typescript-eslint/*"
+      masto:
+        patterns:
+          - "masto"
+      pushover:
+        patterns:
+          - "pushover-notifications"
+      rss-parser:
+        patterns:
+          - "rss-parser"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
