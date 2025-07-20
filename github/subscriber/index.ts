@@ -6,7 +6,7 @@ import Parser from 'rss-parser';
 interface GitHubFeedItem {
   // masutaka.private.atom 定義
 
-                    // </entry>
+                    // <entry>
   id: string;       //   <id>...</id>
   pubDate: string;  //   <published>...</published>
   link: string;     //   <link type="text/html" rel="alternate" href="..."/>
