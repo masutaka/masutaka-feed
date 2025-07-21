@@ -38,6 +38,10 @@ lint-tsc:
 	@$(MAKE) -w -C hatebu/notifier lint-tsc
 	@$(MAKE) -w -C hatebu/subscriber lint-tsc
 
+.PHONY: list-resources
+list-resources:
+	@$(SAM) list resources
+
 REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
                  HATEBU_FEED_URL PUSHOVER_APP_TOKEN PUSHOVER_USER_KEY \
                  MASTODON_URL MASTODON_ACCESS_TOKEN
