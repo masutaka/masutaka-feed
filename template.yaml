@@ -195,8 +195,8 @@ Resources:
       Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
-          GITHUB_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
-          GITHUB_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
+          ITEM_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
+          ITEM_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl

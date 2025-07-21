@@ -8,8 +8,8 @@ interface DirectInvokeEvent {
   entryUrl: string;
 }
 
-const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(process.env.GITHUB_TITLE_IGNORE_REGEXP!);
-const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(process.env.GITHUB_TITLE_PUSHOVER_REGEXP!);
+const ITEM_TITLE_IGNORE_REGEXP = new RegExp(process.env.ITEM_TITLE_IGNORE_REGEXP!);
+const ITEM_TITLE_PUSHOVER_REGEXP = new RegExp(process.env.ITEM_TITLE_PUSHOVER_REGEXP!);
 const MASTODON_URL = process.env.MASTODON_URL!;
 const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
@@ -33,8 +33,8 @@ export const handler = async (
 const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
   console.info(`Processing entry for GitHub: ${entryUrl}`);
 
-  if (GITHUB_TITLE_IGNORE_REGEXP.test(entryTitle)) {
-    console.info(`Ignoring entry "${entryTitle}" (matched ${GITHUB_TITLE_IGNORE_REGEXP})`);
+  if (ITEM_TITLE_IGNORE_REGEXP.test(entryTitle)) {
+    console.info(`Ignoring entry "${entryTitle}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
     return;
   }
 
@@ -71,8 +71,8 @@ const postToMastodon = async (status: string): Promise<any> => {
 };
 
 const sendPushover = async (entryTitle: string, message: string): Promise<any> => {
-  if (!GITHUB_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
-    console.info(`Skipping Pushover notification for "${entryTitle}" (no match with ${GITHUB_TITLE_PUSHOVER_REGEXP})`);
+  if (!ITEM_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
+    console.info(`Skipping Pushover notification for "${entryTitle}" (no match with ${ITEM_TITLE_PUSHOVER_REGEXP})`);
     return Promise.resolve('Skipped Pushover notification');
   }
 
