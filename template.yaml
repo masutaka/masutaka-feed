@@ -117,11 +117,11 @@ Resources:
       Environment:
         Variables:
           FEED_URL: !Ref GitHubFeedUrl
-          STATE_TABLE_NAME: !Ref GitHubFeedStateTable
+          STATE_TABLE_NAME: !Ref GitHubStateTable
           TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref GitHubFeedStateTable
+            TableName: !Ref GitHubStateTable
         - LambdaInvokePolicy:
             FunctionName: !Ref GitHubNotifierFunction
   HatebuFeedSubscriberFunction:
@@ -140,16 +140,16 @@ Resources:
       Environment:
         Variables:
           FEED_URL: !Ref HatebuFeedUrl
-          STATE_TABLE_NAME: !Ref HatebuFeedStateTable
+          STATE_TABLE_NAME: !Ref HatebuStateTable
           TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref HatebuFeedStateTable
+            TableName: !Ref HatebuStateTable
         - LambdaInvokePolicy:
             FunctionName: !Ref HatebuNotifierFunction
 
   # DynamoDB Tables
-  GitHubFeedStateTable:
+  GitHubStateTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: masutaka-feed-github-state
@@ -163,7 +163,7 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
-  HatebuFeedStateTable:
+  HatebuStateTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: masutaka-feed-hatebu-state
