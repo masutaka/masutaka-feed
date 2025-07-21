@@ -98,7 +98,9 @@ export default [
         { "selector": "typeLike", "format": ["PascalCase"] },
         // オブジェクトのプロパティは任意の形式を許可（AWS SDK等のため）
         { "selector": "objectLiteralProperty", "format": null }
-      ]
+      ],
+      // オブジェクトプロパティの省略記法を強制
+      "object-shorthand": ["error", "always"]
     }
   },
   {

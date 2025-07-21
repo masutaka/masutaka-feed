@@ -100,7 +100,9 @@ export default [
         { "selector": "objectLiteralProperty", "format": null },
         // 型のプロパティも任意の形式を許可（RSS等の特殊な名前のため）
         { "selector": "typeProperty", "format": null }
-      ]
+      ],
+      // オブジェクトプロパティの省略記法を強制
+      "object-shorthand": ["error", "always"]
     }
   },
   {

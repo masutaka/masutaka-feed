@@ -62,7 +62,7 @@ const processEntry = async (entryTitle: string, entryUrl: string): Promise<void>
 const postToMastodon = async (status: string): Promise<any> => {
   try {
     return await mastodonClient.v1.statuses.create({
-      status: status,
+      status,
     });
   } catch (error) {
     console.error('Failed to post to Mastodon:', error);
@@ -79,7 +79,7 @@ const sendPushover = async (entryTitle: string, message: string): Promise<any> =
   try {
     return await pushoverClient.send({
       title: entryTitle,
-      message: message, // required
+      message, // required
       device: 'Android',
       priority: 0,      // normal
       sound: 'gamelan',

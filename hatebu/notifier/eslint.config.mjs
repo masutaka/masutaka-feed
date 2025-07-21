@@ -94,7 +94,9 @@ export default [
         { "selector": "variable", "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" },
         { "selector": "function", "format": ["camelCase"] },
         { "selector": "typeLike", "format": ["PascalCase"] }
-      ]
+      ],
+      // オブジェクトプロパティの省略記法を強制
+      "object-shorthand": ["error", "always"]
     }
   },
   {

@@ -51,7 +51,7 @@ const processEntry = async (
 const postToMastodon = async (status: string): Promise<any> => {
   try {
     return await mastodonClient.v1.statuses.create({
-      status: status,
+      status,
     });
   } catch (error) {
     console.error('Failed to post to Mastodon:', error);
