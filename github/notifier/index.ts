@@ -15,7 +15,12 @@ const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
-const PushoverClient = new Pushover({
+const mastodonClient = createRestAPIClient({
+  url: MASTODON_URL,
+  accessToken: MASTODON_ACCESS_TOKEN,
+});
+
+const pushoverClient = new Pushover({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
 });
@@ -30,20 +35,20 @@ export const handler = async (
   return await processEntry(entryTitle, entryUrl);
 };
 
-const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
-  console.info(`Processing entry for GitHub: ${entryUrl}`);
+const processEntry = async (title: string, url: string): Promise<void> => {
+  console.info(`Processing entry for GitHub: ${url}`);
 
-  if (ITEM_TITLE_IGNORE_REGEXP.test(entryTitle)) {
-    console.info(`Ignoring entry "${entryTitle}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
+  if (ITEM_TITLE_IGNORE_REGEXP.test(title)) {
+    console.info(`Ignoring entry "${title}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
     return;
   }
 
-  const message = buildMessage(entryTitle, entryUrl);
+  const message = buildMessage(title, url);
 
   try {
     const [mastodonResponse, pushoverResponse] = await Promise.all([
-      postToMastodon(`[GH] ${entryTitle} ${message}`),
-      sendPushover(entryTitle, message)
+      postToMastodon(`[GH] ${title} ${message}`),
+      sendPushover(title, message)
     ]);
 
     console.info('Successfully posted to Mastodon:', mastodonResponse);
@@ -56,13 +61,8 @@ const processEntry = async (entryTitle: string, entryUrl: string): Promise<void>
 
 const postToMastodon = async (status: string): Promise<any> => {
   try {
-    const masto = createRestAPIClient({
-      url: MASTODON_URL,
-      accessToken: MASTODON_ACCESS_TOKEN,
-    });
-
-    return await masto.v1.statuses.create({
-      status: status,
+    return await mastodonClient.v1.statuses.create({
+      status,
     });
   } catch (error) {
     console.error('Failed to post to Mastodon:', error);
@@ -70,16 +70,16 @@ const postToMastodon = async (status: string): Promise<any> => {
   }
 };
 
-const sendPushover = async (entryTitle: string, message: string): Promise<any> => {
-  if (!ITEM_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
-    console.info(`Skipping Pushover notification for "${entryTitle}" (no match with ${ITEM_TITLE_PUSHOVER_REGEXP})`);
+const sendPushover = async (title: string, message: string): Promise<any> => {
+  if (!ITEM_TITLE_PUSHOVER_REGEXP.test(title)) {
+    console.info(`Skipping Pushover notification for "${title}" (no match with ${ITEM_TITLE_PUSHOVER_REGEXP})`);
     return Promise.resolve('Skipped Pushover notification');
   }
 
   try {
-    return await PushoverClient.send({
-      title: entryTitle,
-      message: message, // required
+    return await pushoverClient.send({
+      title,
+      message, // required
       device: 'Android',
       priority: 0,      // normal
       sound: 'gamelan',
@@ -90,12 +90,12 @@ const sendPushover = async (entryTitle: string, message: string): Promise<any> =
   }
 };
 
-const buildMessage = (entryTitle: string, entryUrl: string): string => {
-  const found = entryTitle.match(/^([^ ]+) started following/);
+const buildMessage = (title: string, url: string): string => {
+  const found = title.match(/^([^ ]+) started following/);
 
   if (found) {
     return `https://github.com/${found[1]}`;
   }
 
-  return entryUrl;
+  return url;
 };

@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import Parser from 'rss-parser';
+import Parser from 'rss-parser'; // eslint-disable-line @typescript-eslint/naming-convention
 
 interface HatebuFeedItem {
   // favorite.rss 定義

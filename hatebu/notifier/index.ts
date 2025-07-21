@@ -12,6 +12,11 @@ interface DirectInvokeEvent {
 const MASTODON_URL = process.env.MASTODON_URL!;
 const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 
+const mastodonClient = createRestAPIClient({
+  url: MASTODON_URL,
+  accessToken: MASTODON_ACCESS_TOKEN,
+});
+
 export const handler = async (
   event: DirectInvokeEvent,
   _context: Context
@@ -24,16 +29,16 @@ export const handler = async (
 
 
 const processEntry = async (
-  entryAuthor: string,
-  entryComment: string,
-  entryTitle: string,
-  entryUrl: string,
+  author: string,
+  comment: string,
+  title: string,
+  url: string,
 ): Promise<void> => {
-  console.info(`Processing entry for Hatebu: ${entryUrl}`);
+  console.info(`Processing entry for Hatebu: ${url}`);
 
   try {
     const response = await postToMastodon(
-      `[B!] id:${entryAuthor} ${entryComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
+      `[B!] id:${author} ${comment} > ${title} ${url}`.replace(/ +/g, ' ')
     );
 
     console.info('Successfully posted to Mastodon:', response);
@@ -45,13 +50,8 @@ const processEntry = async (
 
 const postToMastodon = async (status: string): Promise<any> => {
   try {
-    const masto = createRestAPIClient({
-      url: MASTODON_URL,
-      accessToken: MASTODON_ACCESS_TOKEN,
-    });
-
-    return await masto.v1.statuses.create({
-      status: status,
+    return await mastodonClient.v1.statuses.create({
+      status,
     });
   } catch (error) {
     console.error('Failed to post to Mastodon:', error);
