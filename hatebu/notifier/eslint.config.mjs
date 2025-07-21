@@ -96,7 +96,9 @@ export default [
         { "selector": "typeLike", "format": ["PascalCase"] }
       ],
       // オブジェクトプロパティの省略記法を強制
-      "object-shorthand": ["error", "always"]
+      "object-shorthand": ["error", "always"],
+      // 関数の引数への再代入を禁止
+      "no-param-reassign": ["error", { "props": true }]
     }
   },
   {
