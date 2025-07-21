@@ -15,6 +15,11 @@ const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
+const mastodonClient = createRestAPIClient({
+  url: MASTODON_URL,
+  accessToken: MASTODON_ACCESS_TOKEN,
+});
+
 const pushoverClient = new Pushover({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
@@ -56,12 +61,7 @@ const processEntry = async (entryTitle: string, entryUrl: string): Promise<void>
 
 const postToMastodon = async (status: string): Promise<any> => {
   try {
-    const masto = createRestAPIClient({
-      url: MASTODON_URL,
-      accessToken: MASTODON_ACCESS_TOKEN,
-    });
-
-    return await masto.v1.statuses.create({
+    return await mastodonClient.v1.statuses.create({
       status: status,
     });
   } catch (error) {

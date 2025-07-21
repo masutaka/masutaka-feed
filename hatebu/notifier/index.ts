@@ -12,6 +12,11 @@ interface DirectInvokeEvent {
 const MASTODON_URL = process.env.MASTODON_URL!;
 const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 
+const mastodonClient = createRestAPIClient({
+  url: MASTODON_URL,
+  accessToken: MASTODON_ACCESS_TOKEN,
+});
+
 export const handler = async (
   event: DirectInvokeEvent,
   _context: Context
@@ -45,12 +50,7 @@ const processEntry = async (
 
 const postToMastodon = async (status: string): Promise<any> => {
   try {
-    const masto = createRestAPIClient({
-      url: MASTODON_URL,
-      accessToken: MASTODON_ACCESS_TOKEN,
-    });
-
-    return await masto.v1.statuses.create({
+    return await mastodonClient.v1.statuses.create({
       status: status,
     });
   } catch (error) {
