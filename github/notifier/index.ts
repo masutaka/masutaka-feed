@@ -8,31 +8,12 @@ interface DirectInvokeEvent {
   entryUrl: string;
 }
 
-// 環境変数の型定義
-interface EnvironmentVariables {
-  MASTODON_URL: string;
-  MASTODON_ACCESS_TOKEN: string;
-  GITHUB_TITLE_IGNORE_REGEXP: string;
-  GITHUB_TITLE_PUSHOVER_REGEXP: string;
-  PUSHOVER_USER_KEY: string;
-  PUSHOVER_APP_TOKEN: string;
-}
-
-// 型安全な環境変数取得
-const getEnvVar = (key: keyof EnvironmentVariables): string => {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Environment variable ${key} is not set`);
-  }
-  return value;
-};
-
-const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_IGNORE_REGEXP'));
-const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(getEnvVar('GITHUB_TITLE_PUSHOVER_REGEXP'));
-const MASTODON_URL = getEnvVar('MASTODON_URL');
-const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
-const PUSHOVER_USER_KEY = getEnvVar('PUSHOVER_USER_KEY');
-const PUSHOVER_APP_TOKEN = getEnvVar('PUSHOVER_APP_TOKEN');
+const GITHUB_TITLE_IGNORE_REGEXP = new RegExp(process.env.GITHUB_TITLE_IGNORE_REGEXP!);
+const GITHUB_TITLE_PUSHOVER_REGEXP = new RegExp(process.env.GITHUB_TITLE_PUSHOVER_REGEXP!);
+const MASTODON_URL = process.env.MASTODON_URL!;
+const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
+const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
+const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
 const PushoverClient = new Pushover({
   user: PUSHOVER_USER_KEY,

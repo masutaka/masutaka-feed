@@ -9,23 +9,8 @@ interface DirectInvokeEvent {
   entryUrl: string;
 }
 
-// 環境変数の型定義
-interface EnvironmentVariables {
-  MASTODON_URL: string;
-  MASTODON_ACCESS_TOKEN: string;
-}
-
-// 型安全な環境変数取得
-const getEnvVar = (key: keyof EnvironmentVariables): string => {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Environment variable ${key} is not set`);
-  }
-  return value;
-};
-
-const MASTODON_URL = getEnvVar('MASTODON_URL');
-const MASTODON_ACCESS_TOKEN = getEnvVar('MASTODON_ACCESS_TOKEN');
+const MASTODON_URL = process.env.MASTODON_URL!;
+const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 
 export const handler = async (
   event: DirectInvokeEvent,
