@@ -372,6 +372,7 @@ Resources:
       TreatMissingData: ignore
 
   # SNS Topic for Lambda Alarms
+  # Note: SNS Subscription (email) is manually configured via AWS Console
   LambdaAlarmTopic:
     Type: AWS::SNS::Topic
     Properties:
