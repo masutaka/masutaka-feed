@@ -33,6 +33,7 @@ Globals:
     Handler: index.handler
     Runtime: nodejs22.x
     MemorySize: 256  # MB (default: 128)
+    Timeout: 60  # seconds (default: 3)
     Architectures:
       - arm64
 
@@ -118,7 +119,6 @@ Resources:
           FEED_URL: !Ref GitHubFeedUrl
           STATE_TABLE_NAME: !Ref GitHubFeedStateTable
           TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
-      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GitHubFeedStateTable
@@ -142,7 +142,6 @@ Resources:
           FEED_URL: !Ref HatebuFeedUrl
           STATE_TABLE_NAME: !Ref HatebuFeedStateTable
           TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
-      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HatebuFeedStateTable
@@ -201,7 +200,6 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-      Timeout: 60  # seconds (default: 3)
   HatebuNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -221,7 +219,6 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-      Timeout: 60  # seconds (default: 3)
 
   # Feed Subscriber Alarms
   GitHubFeedSubscriberErrorAlarm:
