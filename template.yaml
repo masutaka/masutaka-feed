@@ -335,3 +335,41 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
+
+  GitHubNotifierDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for github-notifier
+      AlarmName: github-notifier-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GitHubNotifierFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 900  # 15 minutes
+      Statistic: Average
+      Threshold: 30000  # 30 seconds
+      TreatMissingData: ignore
+
+  HatebuNotifierDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for hatebu-notifier
+      AlarmName: hatebu-notifier-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuNotifierFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 900  # 15 minutes
+      Statistic: Average
+      Threshold: 20000  # 20 seconds
+      TreatMissingData: ignore
