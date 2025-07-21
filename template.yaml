@@ -33,6 +33,7 @@ Globals:
     Handler: index.handler
     Runtime: nodejs22.x
     MemorySize: 256  # MB (default: 128)
+    Timeout: 60  # seconds (default: 3)
     Architectures:
       - arm64
 
@@ -45,7 +46,7 @@ Resources:
       ScheduleExpression: "rate(5 minutes)"
       Target:
         Arn: !GetAtt GitHubFeedSubscriberFunction.Arn
-        RoleArn: !GetAtt GitHubSchedulerRole.Arn
+        RoleArn: !GetAtt GitHubFeedSchedulerRole.Arn
       FlexibleTimeWindow:
         Mode: "OFF"
       State: "ENABLED"
@@ -56,13 +57,13 @@ Resources:
       ScheduleExpression: "rate(15 minutes)"
       Target:
         Arn: !GetAtt HatebuFeedSubscriberFunction.Arn
-        RoleArn: !GetAtt HatebuSchedulerRole.Arn
+        RoleArn: !GetAtt HatebuFeedSchedulerRole.Arn
       FlexibleTimeWindow:
         Mode: "OFF"
       State: "ENABLED"
 
   # EventBridge Scheduler IAM Roles
-  GitHubSchedulerRole:
+  GitHubFeedSchedulerRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -80,7 +81,7 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource: !GetAtt GitHubFeedSubscriberFunction.Arn
-  HatebuSchedulerRole:
+  HatebuFeedSchedulerRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -118,7 +119,6 @@ Resources:
           FEED_URL: !Ref GitHubFeedUrl
           STATE_TABLE_NAME: !Ref GitHubStateTable
           TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
-      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GitHubStateTable
@@ -142,7 +142,6 @@ Resources:
           FEED_URL: !Ref HatebuFeedUrl
           STATE_TABLE_NAME: !Ref HatebuStateTable
           TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
-      Timeout: 60  # seconds (default: 3)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HatebuStateTable
@@ -195,13 +194,12 @@ Resources:
       Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
-          GITHUB_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
-          GITHUB_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
+          ITEM_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
+          ITEM_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-      Timeout: 180 # seconds (default: 3)
   HatebuNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -221,7 +219,6 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-      Timeout: 180 # seconds (default: 3)
 
   # Feed Subscriber Alarms
   GitHubFeedSubscriberErrorAlarm:
@@ -298,13 +295,13 @@ Resources:
       TreatMissingData: ignore
 
   # Feed Notifier Alarms
-  GithubFunctionAlarm:
+  GitHubNotifierErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
-      AlarmDescription: Any errors occurred in masutaka-feed-GithubFunction
-      AlarmName: masutaka-feed-GithubFunction-errors
+      AlarmDescription: Any errors occurred in github-notifier
+      AlarmName: github-notifier-errors
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
@@ -317,13 +314,13 @@ Resources:
       Threshold: 0
       TreatMissingData: ignore
 
-  HatebuFunctionAlarm:
+  HatebuNotifierErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
-      AlarmDescription: Any errors occurred in masutaka-feed-HatebuFunction
-      AlarmName: masutaka-feed-HatebuFunction-errors
+      AlarmDescription: Any errors occurred in hatebu-notifier
+      AlarmName: hatebu-notifier-errors
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
@@ -334,4 +331,42 @@ Resources:
       Period: 900 # 15 minutes
       Statistic: Sum
       Threshold: 0
+      TreatMissingData: ignore
+
+  GitHubNotifierDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for github-notifier
+      AlarmName: github-notifier-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GitHubNotifierFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 900  # 15 minutes
+      Statistic: Average
+      Threshold: 30000  # 30 seconds
+      TreatMissingData: ignore
+
+  HatebuNotifierDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:OrdinaryLambdaError"
+      AlarmDescription: High duration for hatebu-notifier
+      AlarmName: hatebu-notifier-duration
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref HatebuNotifierFunction
+      EvaluationPeriods: 2
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 900  # 15 minutes
+      Statistic: Average
+      Threshold: 20000  # 20 seconds
       TreatMissingData: ignore

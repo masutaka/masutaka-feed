@@ -32,23 +32,19 @@ interface DirectInvokeEvent {
   entryUrl: string;
 }
 
+const FEED_URL = process.env.FEED_URL!;
+const STATE_TABLE_NAME = process.env.STATE_TABLE_NAME!;
+const TARGET_FUNCTION_ARN = process.env.TARGET_FUNCTION_ARN!;
+
 const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const lambdaClient = new LambdaClient({});
 
 export const handler = async (): Promise<void> => {
   console.info('Starting Hatebu feed subscription');
 
-  const feedUrl = process.env.FEED_URL;
-  const tableName = process.env.STATE_TABLE_NAME;
-  const targetFunctionArn = process.env.TARGET_FUNCTION_ARN;
-
-  if (!feedUrl || !tableName || !targetFunctionArn) {
-    throw new Error('Required environment variables are not set');
-  }
-
   try {
     const parser = new Parser<object, HatebuFeedItem>();
-    const feed = await parser.parseURL(feedUrl);
+    const feed = await parser.parseURL(FEED_URL);
 
     console.info(`Processing ${feed.items.length} feed items`);
 
@@ -59,10 +55,10 @@ export const handler = async (): Promise<void> => {
         continue;
       }
 
-      const isNew = await checkIfNewEntry(entryId, tableName);
+      const isNew = await checkIfNewEntry(entryId, STATE_TABLE_NAME);
 
       if (isNew) {
-        await processNewEntry(entryId, item, targetFunctionArn, tableName);
+        await processNewEntry(entryId, item, TARGET_FUNCTION_ARN, STATE_TABLE_NAME);
       } else {
         console.info(`Skipping already processed entry: ${entryId}`);
       }

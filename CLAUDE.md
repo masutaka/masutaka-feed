@@ -19,33 +19,51 @@ make lint
 
 ## プロジェクト概要
 
-AWS SAMを使用したサーバーレスアプリケーション。GitHubの活動とはてブのお気に入りをMastodonとPushover（Pushoverは一部のみ）に投稿する。
+AWS SAMを使用したサーバーレスアプリケーション。構成図は @README.md の Features 参照。
 
-### アーキテクチャ
+### EventBridge Scheduler
 
-#### github/
-- **EventBridge Scheduler** (5分ごと) → **Feed Subscriber Lambda** → **DynamoDB** → **Notifier Lambda** → **Mastodon/Pushover**
-- GitHubプライベートフィードを取得し、新規エントリーをフィルタリングして投稿
-- 正規表現フィルタリング機能付き（`GH_TITLE_IGNORE_REGEXP`、`GH_TITLE_PUSHOVER_REGEXP`）
+定期的にLambda関数を起動するスケジューラー：
 
-#### hatebu/
-- **EventBridge Scheduler** (15分ごと) → **Feed Subscriber Lambda** → **DynamoDB** → **Notifier Lambda** → **Mastodon**
-- はてブお気に入りフィードを取得し、新規エントリーを投稿
+- **github-feed-subscriber-schedule**: 5分ごとにGitHubFeedSubscriberFunctionを起動
+- **hatebu-feed-subscriber-schedule**: 15分ごとにHatebuFeedSubscriberFunctionを起動
 
-詳細は @README.md の Features 参照。
+各スケジューラーには専用のIAMロール（GitHubSchedulerRole、HatebuSchedulerRole）が設定され、対象のLambda関数のみを呼び出す権限を持つ。
 
-### Lambda関数構成
-
-各ディレクトリ（github/、hatebu/）には2つのLambda関数が含まれる：
-- **subscriber/**: フィード購読とDynamoDBでの重複チェックを担当
-- **notifier/**: 外部サービス（Mastodon、Pushover）への投稿を担当
+### Lambda関数
 
 すべてのLambda関数はNode.js 22（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
+#### Subscriber関数
+- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
+- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
+
+#### Notifier関数
+- **GitHubNotifierFunction**: Mastodon/Pushoverへの投稿（タイムアウト: 60秒）
+- **HatebuNotifierFunction**: Mastodonへの投稿（タイムアウト: 60秒）
+
 ### DynamoDBテーブル
 
-- **GitHubStateTable**: GitHub処理済みエントリーを管理（TTL: 30日）
-- **HatebuStateTable**: はてブ処理済みエントリーを管理（TTL: 30日）
+- **masutaka-feed-github-state**: GitHub処理済みエントリーを管理（TTL: 30日）
+- **masutaka-feed-hatebu-state**: はてブ処理済みエントリーを管理（TTL: 30日）
+
+### CloudWatchアラーム
+
+すべてのLambda関数に対して以下の2種類のアラームを設定：
+
+#### エラーアラーム
+- **監視内容**: Lambda関数のエラー発生
+- **閾値**: 1回以上のエラーで通知
+- **通知先**: OrdinaryLambdaError SNSトピック
+
+#### 実行時間アラーム
+- **監視内容**: Lambda関数の平均実行時間
+- **評価方法**: 2回連続で閾値を超えた場合に通知
+- **各関数の閾値**:
+  - GitHubFeedSubscriber: 10秒（5分間隔で評価）
+  - HatebuFeedSubscriber: 20秒（15分間隔で評価）
+  - GitHubNotifier: 30秒（15分間隔で評価）
+  - HatebuNotifier: 20秒（15分間隔で評価）
 
 ## 主要コマンド
 
@@ -61,13 +79,16 @@ make lint
 # ESLintによる自動修正
 make fmt-eslint
 
+# これからデプロイされるリソースを表示する
+make list-resources
+
 # SAMテンプレートの検証
 make validate
 
 # SAMビルド（esbuildでTypeScriptをトランスパイル）
 make build
 
-# デプロイ
+# SAMデプロイ
 make deploy
 ```
 
@@ -92,14 +113,14 @@ make deploy
 ## 開発のポイント
 
 ### AWS SAM（Serverless Application Model）
+- **samconfig.toml**: SAMデプロイメント設定
+  - スタック名、リージョン、S3バケットなどの設定
+  - パラメータオーバーライドの管理
 - **template.yaml**: アプリケーション全体の定義
   - Lambda関数（Feed Subscriber、Notifier）の設定
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
-- **samconfig.toml**: SAMデプロイメント設定
-  - スタック名、リージョン、S3バケットなどの設定
-  - パラメータオーバーライドの管理
 - **ビルドプロセス**: esbuildを使用したTypeScriptのトランスパイル
   - `make build`でSAMビルドを実行
   - Lambda関数ごとに最適化されたバンドルを生成
@@ -141,27 +162,7 @@ make deploy
 - **@aws-sdk/client-lambda**: Lambda関数呼び出し（github/subscriber、hatebu/subscriberで使用）
 
 ### 開発依存関係
-- **TypeScript**: 5.8.3
-- **ESLint**: 9.29.0（@typescript-eslint/parser, @typescript-eslint/eslint-plugin）
-- **esbuild**: 0.25.5（ビルドツール）
+- **TypeScript**: 型システム
+- **ESLint**: コード品質チェック（@typescript-eslint/parser, @typescript-eslint/eslint-plugin）
+- **esbuild**: 高速ビルドツール
 - **@types/aws-lambda**, **@types/node**: 型定義
-
-## CI/CD (GitHub Actions)
-
-### テストワークフロー
-- **トリガー**: mainブランチへのpush、Pull Request
-- **実行内容**:
-  - actionlint: GitHub Actions設定のチェック
-  - CodeQL: セキュリティ脆弱性の検出
-  - lint: TypeScriptとESLintによる静的解析（`make setup lint`）
-  - 失敗時はPushover通知（mainブランチのみ）
-
-### デプロイワークフロー
-- **トリガー**: testワークフロー成功後（mainブランチのみ）
-- **認証**: AWS OIDCによるセキュアな認証
-- **デプロイ**: `make deploy`でSAMアプリケーションをデプロイ
-- **リージョン**: ap-northeast-1（東京）
-
-### その他のワークフロー
-- **dependency_review**: PR時の依存関係脆弱性チェック
-- **schedule**: 毎週金曜19:00（JST）にCodeQL分析を定期実行
