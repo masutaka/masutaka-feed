@@ -38,6 +38,27 @@ lint-tsc:
 	@$(MAKE) -w -C hatebu/notifier lint-tsc
 	@$(MAKE) -w -C hatebu/subscriber lint-tsc
 
+REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
+                 HATEBU_FEED_URL PUSHOVER_APP_TOKEN PUSHOVER_USER_KEY \
+                 MASTODON_URL MASTODON_ACCESS_TOKEN
+
+# sam deploy も各パラメータの値が空だとエラーにするが、早期検知したい意図がある
+.PHONY: validate-envs
+validate-envs:
+	@missing_envs=""; \
+	for env in $(REQUIRED_ENVS); do \
+		if [ -z "$${!env}" ]; then \
+			missing_envs="$$missing_envs $$env"; \
+		fi; \
+	done; \
+	if [ -n "$$missing_envs" ]; then \
+		echo "Error: The following environment variables are not set:" >&2; \
+		for env in $$missing_envs; do \
+			echo "  - $$env" >&2; \
+		done; \
+		exit 1; \
+	fi
+
 .PHONY: validate
 validate:
 	@$(SAM) validate
@@ -50,7 +71,7 @@ build: validate
 DEPLOY_OPTIONS := $(if $(CI),--no-confirm-changeset,)
 
 .PHONY: deploy
-deploy: build
+deploy: validate-envs build
 	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
 		GitHubFeedUrl=$$GH_FEED_URL \
 		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
