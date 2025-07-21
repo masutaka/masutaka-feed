@@ -15,7 +15,7 @@ const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
-const PushoverClient = new Pushover({
+const pushoverClient = new Pushover({
   user: PUSHOVER_USER_KEY,
   token: PUSHOVER_APP_TOKEN,
 });
@@ -77,7 +77,7 @@ const sendPushover = async (entryTitle: string, message: string): Promise<any> =
   }
 
   try {
-    return await PushoverClient.send({
+    return await pushoverClient.send({
       title: entryTitle,
       message: message, // required
       device: 'Android',

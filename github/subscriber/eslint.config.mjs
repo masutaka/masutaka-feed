@@ -88,7 +88,17 @@ export default [
           "delimiter": "semi",
           "requireLast": true
         }
-      }]
+      }],
+      // 命名規則
+      "@typescript-eslint/naming-convention": [
+        "error",
+        { "selector": "default", "format": ["camelCase"], "leadingUnderscore": "allow" },
+        { "selector": "variable", "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" },
+        { "selector": "function", "format": ["camelCase"] },
+        { "selector": "typeLike", "format": ["PascalCase"] },
+        // オブジェクトのプロパティは任意の形式を許可（AWS SDK等のため）
+        { "selector": "objectLiteralProperty", "format": null }
+      ]
     }
   },
   {
