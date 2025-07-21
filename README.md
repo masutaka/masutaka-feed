@@ -6,6 +6,8 @@
 [Test]: https://github.com/masutaka/masutaka-feed/actions/workflows/test.yml?query=branch%3Amain
 [deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
 
+A serverless application that posts personal GitHub activities and Hatena Bookmark favorites to Mastodon and Pushover (partial for Pushover).
+
 ## Features
 
 ### github/
@@ -52,6 +54,22 @@ graph TD
     D -->|5: post| E
 ```
 
-## Deployment
+## CI/CD (GitHub Actions)
 
-Every push to the `main` branch will deploy SAM Applications.
+### Test Workflow
+- **Trigger**: Push to main branch, Pull Requests
+- **Actions**:
+  - actionlint: Validate GitHub Actions configuration
+  - CodeQL: Security vulnerability scanning
+  - lint: TypeScript and ESLint static analysis (`make setup lint`)
+  - Pushover notification on failure (main branch only)
+
+### Deploy Workflow
+- **Trigger**: After test workflow success (main branch only)
+- **Authentication**: AWS OIDC for secure access
+- **Deploy**: `make deploy` to deploy SAM application
+- **Region**: ap-northeast-1 (Tokyo)
+
+### Other Workflows
+- **dependency_review**: Check for dependency vulnerabilities on PRs
+- **schedule**: Weekly CodeQL analysis (Friday 19:00 JST)
