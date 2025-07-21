@@ -51,7 +51,8 @@ REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
 validate-envs:
 	@missing_envs=""; \
 	for env in $(REQUIRED_ENVS); do \
-		if [ -z "$${!env}" ]; then \
+		eval "value=\$$$$env"; \
+		if [ -z "$$value" ]; then \
 			missing_envs="$$missing_envs $$env"; \
 		fi; \
 	done; \
