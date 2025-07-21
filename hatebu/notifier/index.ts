@@ -29,16 +29,16 @@ export const handler = async (
 
 
 const processEntry = async (
-  entryAuthor: string,
-  entryComment: string,
-  entryTitle: string,
-  entryUrl: string,
+  author: string,
+  comment: string,
+  title: string,
+  url: string,
 ): Promise<void> => {
-  console.info(`Processing entry for Hatebu: ${entryUrl}`);
+  console.info(`Processing entry for Hatebu: ${url}`);
 
   try {
     const response = await postToMastodon(
-      `[B!] id:${entryAuthor} ${entryComment} > ${entryTitle} ${entryUrl}`.replace(/ +/g, ' ')
+      `[B!] id:${author} ${comment} > ${title} ${url}`.replace(/ +/g, ' ')
     );
 
     console.info('Successfully posted to Mastodon:', response);

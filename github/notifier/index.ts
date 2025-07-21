@@ -35,20 +35,20 @@ export const handler = async (
   return await processEntry(entryTitle, entryUrl);
 };
 
-const processEntry = async (entryTitle: string, entryUrl: string): Promise<void> => {
-  console.info(`Processing entry for GitHub: ${entryUrl}`);
+const processEntry = async (title: string, url: string): Promise<void> => {
+  console.info(`Processing entry for GitHub: ${url}`);
 
-  if (ITEM_TITLE_IGNORE_REGEXP.test(entryTitle)) {
-    console.info(`Ignoring entry "${entryTitle}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
+  if (ITEM_TITLE_IGNORE_REGEXP.test(title)) {
+    console.info(`Ignoring entry "${title}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
     return;
   }
 
-  const message = buildMessage(entryTitle, entryUrl);
+  const message = buildMessage(title, url);
 
   try {
     const [mastodonResponse, pushoverResponse] = await Promise.all([
-      postToMastodon(`[GH] ${entryTitle} ${message}`),
-      sendPushover(entryTitle, message)
+      postToMastodon(`[GH] ${title} ${message}`),
+      sendPushover(title, message)
     ]);
 
     console.info('Successfully posted to Mastodon:', mastodonResponse);
@@ -70,15 +70,15 @@ const postToMastodon = async (status: string): Promise<any> => {
   }
 };
 
-const sendPushover = async (entryTitle: string, message: string): Promise<any> => {
-  if (!ITEM_TITLE_PUSHOVER_REGEXP.test(entryTitle)) {
-    console.info(`Skipping Pushover notification for "${entryTitle}" (no match with ${ITEM_TITLE_PUSHOVER_REGEXP})`);
+const sendPushover = async (title: string, message: string): Promise<any> => {
+  if (!ITEM_TITLE_PUSHOVER_REGEXP.test(title)) {
+    console.info(`Skipping Pushover notification for "${title}" (no match with ${ITEM_TITLE_PUSHOVER_REGEXP})`);
     return Promise.resolve('Skipped Pushover notification');
   }
 
   try {
     return await pushoverClient.send({
-      title: entryTitle,
+      title,
       message, // required
       device: 'Android',
       priority: 0,      // normal
@@ -90,12 +90,12 @@ const sendPushover = async (entryTitle: string, message: string): Promise<any> =
   }
 };
 
-const buildMessage = (entryTitle: string, entryUrl: string): string => {
-  const found = entryTitle.match(/^([^ ]+) started following/);
+const buildMessage = (title: string, url: string): string => {
+  const found = title.match(/^([^ ]+) started following/);
 
   if (found) {
     return `https://github.com/${found[1]}`;
   }
 
-  return entryUrl;
+  return url;
 };
