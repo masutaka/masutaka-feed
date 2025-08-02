@@ -23,6 +23,7 @@ updates:
       aws-sdk:
         patterns:
           - "@aws-sdk/*"
+          - "@types/aws-*"
       esbuild:
         patterns:
           - "esbuild"
@@ -44,4 +45,3 @@ updates:
       typescript:
         patterns:
           - "typescript"
-          - "@types/*"
