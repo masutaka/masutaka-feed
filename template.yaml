@@ -9,6 +9,8 @@ Parameters:
     NoEcho: true
   GithubTitleIgnoreRegexp:
     Type: String
+  GithubUrlIgnoreRegexp:
+    Type: String
   GithubTitlePushoverRegexp:
     Type: String
   HatebuFeedUrl:
@@ -195,6 +197,7 @@ Resources:
       Environment:
         Variables:
           ITEM_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
+          ITEM_URL_IGNORE_REGEXP: !Ref GithubUrlIgnoreRegexp
           ITEM_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey

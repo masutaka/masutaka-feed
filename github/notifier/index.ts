@@ -9,6 +9,7 @@ interface DirectInvokeEvent {
 }
 
 const ITEM_TITLE_IGNORE_REGEXP = new RegExp(process.env.ITEM_TITLE_IGNORE_REGEXP!);
+const ITEM_URL_IGNORE_REGEXP = new RegExp(process.env.ITEM_URL_IGNORE_REGEXP!);
 const ITEM_TITLE_PUSHOVER_REGEXP = new RegExp(process.env.ITEM_TITLE_PUSHOVER_REGEXP!);
 const MASTODON_URL = process.env.MASTODON_URL!;
 const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
@@ -40,6 +41,11 @@ const processEntry = async (title: string, url: string): Promise<void> => {
 
   if (ITEM_TITLE_IGNORE_REGEXP.test(title)) {
     console.info(`Ignoring entry "${title}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
+    return;
+  }
+
+  if (ITEM_URL_IGNORE_REGEXP.test(url)) {
+    console.info(`Ignoring entry "${url}" (matched ${ITEM_URL_IGNORE_REGEXP})`);
     return;
   }
 

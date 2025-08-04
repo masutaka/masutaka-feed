@@ -42,7 +42,7 @@ lint-tsc:
 list-resources:
 	@$(SAM) list resources
 
-REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
+REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_URL_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
                  HATEBU_FEED_URL PUSHOVER_APP_TOKEN PUSHOVER_USER_KEY \
                  MASTODON_URL MASTODON_ACCESS_TOKEN
 
@@ -80,6 +80,7 @@ deploy: validate-envs build
 	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
 		GitHubFeedUrl=$$GH_FEED_URL \
 		GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP \
+		GithubUrlIgnoreRegexp=$$GH_URL_IGNORE_REGEXP \
 		GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP \
 		HatebuFeedUrl=$$HATEBU_FEED_URL \
 		PushoverAppToken=$$PUSHOVER_APP_TOKEN \
