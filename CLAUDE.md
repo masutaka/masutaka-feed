@@ -141,6 +141,7 @@ make deploy
 #### GitHub関連
 - **GH_FEED_URL**: GitHubプライベートフィードのURL（トークン付き）
 - **GH_TITLE_IGNORE_REGEXP**: 無視するタイトルの正規表現パターン
+- **GH_URL_IGNORE_REGEXP**: 無視するURLの正規表現パターン
 - **GH_TITLE_PUSHOVER_REGEXP**: Pushoverに送信するタイトルの正規表現パターン
 
 #### はてブ関連
