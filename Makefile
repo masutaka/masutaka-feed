@@ -78,15 +78,15 @@ DEPLOY_OPTIONS := $(if $(CI),--no-confirm-changeset,)
 .PHONY: deploy
 deploy: validate-envs build
 	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
-		"GitHubFeedUrl=$$GH_FEED_URL" \
-		"GithubTitleIgnoreRegexp=$$GH_TITLE_IGNORE_REGEXP" \
-		"GithubUrlIgnoreRegexp=$$GH_URL_IGNORE_REGEXP" \
-		"GithubTitlePushoverRegexp=$$GH_TITLE_PUSHOVER_REGEXP" \
-		"HatebuFeedUrl=$$HATEBU_FEED_URL" \
-		"PushoverAppToken=$$PUSHOVER_APP_TOKEN" \
-		"PushoverUserKey=$$PUSHOVER_USER_KEY" \
-		"MastodonUrl=$$MASTODON_URL" \
-		"MastodonAccessToken=$$MASTODON_ACCESS_TOKEN"
+		GitHubFeedUrl="$$GH_FEED_URL" \
+		GithubTitleIgnoreRegexp="$$GH_TITLE_IGNORE_REGEXP" \
+		GithubUrlIgnoreRegexp="$$GH_URL_IGNORE_REGEXP" \
+		GithubTitlePushoverRegexp="$$GH_TITLE_PUSHOVER_REGEXP" \
+		HatebuFeedUrl="$$HATEBU_FEED_URL" \
+		PushoverAppToken="$$PUSHOVER_APP_TOKEN" \
+		PushoverUserKey="$$PUSHOVER_USER_KEY" \
+		MastodonUrl="$$MASTODON_URL" \
+		MastodonAccessToken="$$MASTODON_ACCESS_TOKEN"
 
 # .PHONY: destroy
 # destroy:
