@@ -33,7 +33,17 @@ export const handler = async (
   console.info('Starting GitHub notifier with event:', event);
 
   const { entryTitle, entryUrl } = event;
-  return await processEntry(entryTitle, entryUrl);
+
+  // ワークアラウンド: 相対パスの場合は完全なURLに変換
+  const processedUrl = entryUrl.startsWith('https://github.com')
+    ? entryUrl
+    : `https://github.com${entryUrl}`;
+
+  if (processedUrl !== entryUrl) {
+    console.warn(`[Workaround] Converted relative path to full URL: ${processedUrl}`);
+  }
+
+  return await processEntry(entryTitle, processedUrl);
 };
 
 const processEntry = async (title: string, url: string): Promise<void> => {
