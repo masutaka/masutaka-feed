@@ -35,9 +35,9 @@ export const handler = async (
   const { entryTitle, entryUrl } = event;
 
   // ワークアラウンド: 相対パスの場合は完全なURLに変換
-  const processedUrl = entryUrl.startsWith('https://github.com')
-    ? entryUrl
-    : `https://github.com${entryUrl}`;
+  const processedUrl = entryUrl.startsWith('/')
+    ? `https://github.com${entryUrl}`
+    : entryUrl;
 
   if (processedUrl !== entryUrl) {
     console.warn(`[Workaround] Converted relative path to full URL: ${processedUrl}`);
