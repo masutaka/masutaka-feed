@@ -7,6 +7,8 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "npm"
     directories:
       - "/github/notifier"
@@ -17,6 +19,8 @@ updates:
       interval: "monthly"
       time: "19:00"
       timezone: "Asia/Tokyo"
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "@types/node" # To match the Node.js version in .tool-versions
     groups:
