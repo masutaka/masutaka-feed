@@ -1,8 +1,0 @@
-# https://github.com/qodo-ai/pr-agent/blob/main/pr_agent/settings/configuration.toml
-
-[config]
-response_language="ja-JP"
-
-[pr_description] # /describe #
-generate_ai_title = true
-use_description_markers = true
