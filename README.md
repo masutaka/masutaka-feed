@@ -1,10 +1,14 @@
 # masutaka-feed
 
 [![Test](https://github.com/masutaka/masutaka-feed/actions/workflows/test.yml/badge.svg?branch=main)][Test]
-[![Deploy - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][deploy]
+[![Deploy - GitHub Actions](https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml/badge.svg?branch=main)][Deploy]
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/masutaka/masutaka-feed)][CodeRabbit]
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)][deepwiki]
 
 [Test]: https://github.com/masutaka/masutaka-feed/actions/workflows/test.yml?query=branch%3Amain
-[deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
+[Deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
+[CodeRabbit]: https://www.coderabbit.ai/
+[DeepWiki]: https://deepwiki.com/masutaka/masutaka-feed
 
 A serverless application that posts personal GitHub activities and Hatena Bookmark favorites to Mastodon and Pushover (partial for Pushover).
 
