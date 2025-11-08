@@ -15,14 +15,14 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-    - uses: actions/checkout@v5
-    - name: Run actionlint
-      uses: reviewdog/action-actionlint@f00ad0691526c10be4021a91b2510f0a769b14d0 # v1.68.0
-      with:
-        fail_level: error
-        filter_mode: nofilter
-        level: error
-        reporter: github-pr-review
+      - uses: actions/checkout@v5
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@f00ad0691526c10be4021a91b2510f0a769b14d0 # v1.68.0
+        with:
+          fail_level: error
+          filter_mode: nofilter
+          level: error
+          reporter: github-pr-review
   codeql:
     permissions:
       actions: read
@@ -36,18 +36,18 @@ jobs:
     permissions:
       contents: read
     steps:
-    - uses: actions/checkout@v5
-    - name: Setup Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version-file: '.tool-versions'
-        cache: npm
-        cache-dependency-path: |
-          github/notifier/package-lock.json
-          github/subscriber/package-lock.json
-          hatebu/notifier/package-lock.json
-          hatebu/subscriber/package-lock.json
-    - run: make setup lint
+      - uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+          cache-dependency-path: |
+            github/notifier/package-lock.json
+            github/subscriber/package-lock.json
+            hatebu/notifier/package-lock.json
+            hatebu/subscriber/package-lock.json
+      - run: make setup lint
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()

@@ -9,8 +9,10 @@ Parameters:
     NoEcho: true
   GithubTitleIgnoreRegexp:
     Type: String
+    NoEcho: true
   GithubUrlIgnoreRegexp:
     Type: String
+    NoEcho: true
   GithubTitlePushoverRegexp:
     Type: String
   HatebuFeedUrl:
