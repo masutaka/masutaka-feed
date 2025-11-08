@@ -24,28 +24,28 @@ jobs:
       id-token: write
     timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v5
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v5
-      with:
-        aws-region: ap-northeast-1
-        role-duration-seconds: 900
-        role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
-    - name: Setup SAM CLI
-      uses: aws-actions/setup-sam@v2
-      with:
-        use-installer: true
-    - run: make deploy
-      env:
-        GH_FEED_URL: ${{ secrets.GH_FEED_URL }}
-        GH_TITLE_IGNORE_REGEXP: ${{ vars.GH_TITLE_IGNORE_REGEXP }}
-        GH_URL_IGNORE_REGEXP: ${{ vars.GH_URL_IGNORE_REGEXP }}
-        GH_TITLE_PUSHOVER_REGEXP: ${{ vars.GH_TITLE_PUSHOVER_REGEXP }}
-        HATEBU_FEED_URL: ${{ secrets.HATEBU_FEED_URL }}
-        PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_APP_TOKEN }}
-        PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
-        MASTODON_URL: ${{ vars.MASTODON_URL }}
-        MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+      - uses: actions/checkout@v5
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: ap-northeast-1
+          role-duration-seconds: 900
+          role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+      - run: make deploy
+        env:
+          GH_FEED_URL: ${{ secrets.GH_FEED_URL }}
+          GH_TITLE_IGNORE_REGEXP: ${{ vars.GH_TITLE_IGNORE_REGEXP }}
+          GH_URL_IGNORE_REGEXP: ${{ vars.GH_URL_IGNORE_REGEXP }}
+          GH_TITLE_PUSHOVER_REGEXP: ${{ vars.GH_TITLE_PUSHOVER_REGEXP }}
+          HATEBU_FEED_URL: ${{ secrets.HATEBU_FEED_URL }}
+          PUSHOVER_APP_TOKEN: ${{ secrets.PUSHOVER_APP_TOKEN }}
+          PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+          MASTODON_URL: ${{ vars.MASTODON_URL }}
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()
