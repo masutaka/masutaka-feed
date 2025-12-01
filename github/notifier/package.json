@@ -8,7 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "esbuild": "0.25.11",
-    "masto": "7.3.0",
+    "masto": "7.5.0",
     "pushover-notifications": "1.2.3"
   },
   "devDependencies": {
