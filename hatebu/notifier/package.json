@@ -11,13 +11,13 @@
     "masto": "7.3.0"
   },
   "devDependencies": {
-    "@eslint/js": "9.38.0",
-    "@stylistic/eslint-plugin": "5.5.0",
+    "@eslint/js": "9.39.1",
+    "@stylistic/eslint-plugin": "5.6.1",
     "@types/aws-lambda": "8.10.156",
     "@types/node": "22.16.0",
-    "@typescript-eslint/eslint-plugin": "8.46.2",
-    "@typescript-eslint/parser": "8.46.2",
-    "eslint": "9.38.0",
+    "@typescript-eslint/eslint-plugin": "8.47.0",
+    "@typescript-eslint/parser": "8.47.0",
+    "eslint": "9.39.1",
     "typescript": "5.9.3"
   }
 }
