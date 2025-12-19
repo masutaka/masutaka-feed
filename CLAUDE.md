@@ -32,7 +32,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 ### Lambda関数
 
-すべてのLambda関数はNode.js 22（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
+すべてのLambda関数はNode.js 24（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
 #### Subscriber関数
 - **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
