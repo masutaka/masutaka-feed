@@ -24,15 +24,15 @@ jobs:
       id-token: write
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
           aws-region: ap-northeast-1
           role-duration-seconds: 900
           role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
       - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@v2
+        uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800 # v2
         with:
           use-installer: true
       - run: make deploy
