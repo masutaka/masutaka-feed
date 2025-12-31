@@ -53,8 +53,12 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### エラーアラーム
 - **監視内容**: Lambda関数のエラー発生
-- **閾値**: 1回以上のエラーで通知
-- **通知先**: OrdinaryLambdaError SNSトピック
+- **通知先**: masutaka-feed-lambda-alarms SNSトピック
+- **各関数の閾値**:
+  - GitHubFeedSubscriber: 2回連続でエラー発生（5分間隔で評価）
+  - HatebuFeedSubscriber: 1回以上のエラー（15分間隔で評価）
+  - GitHubNotifier: 1回以上のエラー（15分間隔で評価）
+  - HatebuNotifier: 1回以上のエラー（15分間隔で評価）
 
 #### 実行時間アラーム
 - **監視内容**: Lambda関数の平均実行時間
