@@ -234,10 +234,11 @@ Resources:
       AlarmDescription: Any errors occurred in github-feed-subscriber
       AlarmName: github-feed-subscriber-errors
       ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 2
       Dimensions:
         - Name: FunctionName
           Value: !Ref GitHubFeedSubscriberFunction
-      EvaluationPeriods: 1
+      EvaluationPeriods: 2
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 300  # 5 minutes
