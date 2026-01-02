@@ -10,7 +10,7 @@
     "@aws-sdk/client-dynamodb": "3.940.0",
     "@aws-sdk/client-lambda": "3.940.0",
     "@aws-sdk/lib-dynamodb": "3.940.0",
-    "esbuild": "0.27.0",
+    "esbuild": "0.27.2",
     "rss-parser": "3.13.0"
   },
   "devDependencies": {
