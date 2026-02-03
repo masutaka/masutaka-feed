@@ -7,16 +7,16 @@
   "author": "Takashi Masuda",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "3.958.0",
-    "@aws-sdk/client-lambda": "3.958.0",
-    "@aws-sdk/lib-dynamodb": "3.958.0",
+    "@aws-sdk/client-dynamodb": "3.975.0",
+    "@aws-sdk/client-lambda": "3.975.0",
+    "@aws-sdk/lib-dynamodb": "3.975.0",
     "esbuild": "0.27.2",
     "rss-parser": "3.13.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
     "@stylistic/eslint-plugin": "5.7.1",
-    "@types/aws-lambda": "8.10.159",
+    "@types/aws-lambda": "8.10.160",
     "@types/node": "22.16.0",
     "@typescript-eslint/eslint-plugin": "8.53.1",
     "@typescript-eslint/parser": "8.53.1",
