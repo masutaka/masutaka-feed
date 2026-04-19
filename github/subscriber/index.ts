@@ -91,11 +91,15 @@ const processNewEntry = async (
   };
 
   try {
-    await lambdaClient.send(new InvokeCommand({
+    const response = await lambdaClient.send(new InvokeCommand({
       FunctionName: targetFunctionArn,
       InvocationType: 'RequestResponse',
       Payload: Buffer.from(JSON.stringify(payload))
     }));
+
+    if (response.FunctionError) {
+      throw new Error(`Notifier failed: ${response.FunctionError}`);
+    }
 
     await markAsProcessed(entryId, item, tableName);
     console.info(`Successfully processed entry: ${entryId}`);
