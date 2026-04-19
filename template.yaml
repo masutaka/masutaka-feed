@@ -234,11 +234,11 @@ Resources:
       AlarmDescription: Any errors occurred in github-feed-subscriber
       AlarmName: github-feed-subscriber-errors
       ComparisonOperator: GreaterThanThreshold
-      DatapointsToAlarm: 2
+      DatapointsToAlarm: 6
       Dimensions:
         - Name: FunctionName
           Value: !Ref GitHubFeedSubscriberFunction
-      EvaluationPeriods: 2
+      EvaluationPeriods: 6
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 300  # 5 minutes
@@ -253,51 +253,16 @@ Resources:
       AlarmDescription: Any errors occurred in hatebu-feed-subscriber
       AlarmName: hatebu-feed-subscriber-errors
       ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 3
       Dimensions:
         - Name: FunctionName
           Value: !Ref HatebuFeedSubscriberFunction
-      EvaluationPeriods: 1
+      EvaluationPeriods: 3
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 900  # 15 minutes
       Statistic: Sum
       Threshold: 0
-      TreatMissingData: ignore
-  GitHubFeedSubscriberDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: High duration for github-feed-subscriber
-      AlarmName: github-feed-subscriber-duration
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref GitHubFeedSubscriberFunction
-      EvaluationPeriods: 2
-      MetricName: Duration
-      Namespace: AWS/Lambda
-      Period: 300
-      Statistic: Average
-      Threshold: 10000  # 10 seconds
-      TreatMissingData: ignore
-  HatebuFeedSubscriberDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: High duration for hatebu-feed-subscriber
-      AlarmName: hatebu-feed-subscriber-duration
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref HatebuFeedSubscriberFunction
-      EvaluationPeriods: 2
-      MetricName: Duration
-      Namespace: AWS/Lambda
-      Period: 900
-      Statistic: Average
-      Threshold: 20000  # 20 seconds
       TreatMissingData: ignore
 
   # Feed Notifier Alarms
@@ -309,10 +274,11 @@ Resources:
       AlarmDescription: Any errors occurred in github-notifier
       AlarmName: github-notifier-errors
       ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 3
       Dimensions:
         - Name: FunctionName
           Value: !Ref GitHubNotifierFunction
-      EvaluationPeriods: 1
+      EvaluationPeriods: 3
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 900 # 15 minutes
@@ -328,53 +294,16 @@ Resources:
       AlarmDescription: Any errors occurred in hatebu-notifier
       AlarmName: hatebu-notifier-errors
       ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 3
       Dimensions:
         - Name: FunctionName
           Value: !Ref HatebuNotifierFunction
-      EvaluationPeriods: 1
+      EvaluationPeriods: 3
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 900 # 15 minutes
       Statistic: Sum
       Threshold: 0
-      TreatMissingData: ignore
-
-  GitHubNotifierDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: High duration for github-notifier
-      AlarmName: github-notifier-duration
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref GitHubNotifierFunction
-      EvaluationPeriods: 2
-      MetricName: Duration
-      Namespace: AWS/Lambda
-      Period: 900  # 15 minutes
-      Statistic: Average
-      Threshold: 30000  # 30 seconds
-      TreatMissingData: ignore
-
-  HatebuNotifierDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: High duration for hatebu-notifier
-      AlarmName: hatebu-notifier-duration
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref HatebuNotifierFunction
-      EvaluationPeriods: 2
-      MetricName: Duration
-      Namespace: AWS/Lambda
-      Period: 900  # 15 minutes
-      Statistic: Average
-      Threshold: 20000  # 20 seconds
       TreatMissingData: ignore
 
   # SNS Topic for Lambda Alarms

@@ -49,25 +49,17 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 ### CloudWatchアラーム
 
-すべてのLambda関数に対して以下の2種類のアラームを設定：
+すべてのLambda関数に対してエラーアラームを設定：
 
-#### エラーアラーム
 - **監視内容**: Lambda関数のエラー発生
 - **通知先**: masutaka-feed-lambda-alarms SNSトピック
 - **各関数の閾値**:
-  - GitHubFeedSubscriber: 2回連続でエラー発生（5分間隔で評価）
-  - HatebuFeedSubscriber: 1回以上のエラー（15分間隔で評価）
-  - GitHubNotifier: 1回以上のエラー（15分間隔で評価）
-  - HatebuNotifier: 1回以上のエラー（15分間隔で評価）
+  - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
+  - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）
+  - GitHubNotifier: 3回連続でエラー発生（15分間隔で評価）
+  - HatebuNotifier: 3回連続でエラー発生（15分間隔で評価）
 
-#### 実行時間アラーム
-- **監視内容**: Lambda関数の平均実行時間
-- **評価方法**: 2回連続で閾値を超えた場合に通知
-- **各関数の閾値**:
-  - GitHubFeedSubscriber: 10秒（5分間隔で評価）
-  - HatebuFeedSubscriber: 20秒（15分間隔で評価）
-  - GitHubNotifier: 30秒（15分間隔で評価）
-  - HatebuNotifier: 20秒（15分間隔で評価）
+外部フィードの一時的な5xxなど、次回実行で自然復旧する単発の失敗を通知しない設計。
 
 ## 主要コマンド
 
