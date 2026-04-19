@@ -31,10 +31,6 @@ jobs:
           aws-region: ap-northeast-1
           role-duration-seconds: 900
           role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
-      - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@d78e1a4a9656d3b223e59b80676a797f20093133 # v2
-        with:
-          use-installer: true
       - run: make deploy
         env:
           GH_FEED_URL: ${{ secrets.GH_FEED_URL }}
