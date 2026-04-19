@@ -61,17 +61,15 @@ const processEntry = async (title: string, url: string): Promise<void> => {
 
   const message = buildMessage(title, url);
 
-  try {
-    const [mastodonResponse, pushoverResponse] = await Promise.all([
-      postToMastodon(`[GH] ${title} ${message}`),
-      sendPushover(title, message)
-    ]);
+  const mastodonResponse = await postToMastodon(`[GH] ${title} ${message}`);
+  console.info('Successfully posted to Mastodon:', mastodonResponse);
 
-    console.info('Successfully posted to Mastodon:', mastodonResponse);
+  // Pushover は best effort（失敗してもエントリーは処理済みとする）
+  try {
+    const pushoverResponse = await sendPushover(title, message);
     console.info('Successfully sent to Pushover:', pushoverResponse);
   } catch (error) {
-    console.error('Failed to process entry:', error);
-    throw error;
+    console.warn('Pushover failed (best effort); ignoring:', error);
   }
 };
 
