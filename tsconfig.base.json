@@ -2,8 +2,12 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "NodeNext",
-    "lib": ["ES2020"],
-    "types": ["node"],
+    "lib": [
+      "ES2020"
+    ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
