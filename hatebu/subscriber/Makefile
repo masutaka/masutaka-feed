@@ -3,7 +3,7 @@ NPX := npx
 
 .PHONY: setup
 setup:
-	@$(NPM) install
+	@$(NPM) ci
 
 .PHONY: fmt-eslint
 fmt-eslint:
