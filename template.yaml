@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Managed by AWS SAM
 
@@ -36,8 +36,8 @@ Globals:
   Function:
     Handler: index.handler
     Runtime: nodejs24.x
-    MemorySize: 256  # MB (default: 128)
-    Timeout: 60  # seconds (default: 3)
+    MemorySize: 256 # MB (default: 128)
+    Timeout: 60 # seconds (default: 3)
     Architectures:
       - arm64
 
@@ -71,7 +71,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -80,7 +80,7 @@ Resources:
       Policies:
         - PolicyName: LambdaInvokePolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action: lambda:InvokeFunction
@@ -89,7 +89,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -98,7 +98,7 @@ Resources:
       Policies:
         - PolicyName: LambdaInvokePolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action: lambda:InvokeFunction
@@ -241,7 +241,7 @@ Resources:
       EvaluationPeriods: 6
       MetricName: Errors
       Namespace: AWS/Lambda
-      Period: 300  # 5 minutes
+      Period: 300 # 5 minutes
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
@@ -260,7 +260,7 @@ Resources:
       EvaluationPeriods: 3
       MetricName: Errors
       Namespace: AWS/Lambda
-      Period: 900  # 15 minutes
+      Period: 900 # 15 minutes
       Statistic: Sum
       Threshold: 0
       TreatMissingData: ignore
