@@ -7,9 +7,9 @@
   "author": "Takashi Masuda",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "3.1037.0",
-    "@aws-sdk/client-lambda": "3.1037.0",
-    "@aws-sdk/lib-dynamodb": "3.1037.0",
+    "@aws-sdk/client-dynamodb": "3.1053.0",
+    "@aws-sdk/client-lambda": "3.1053.0",
+    "@aws-sdk/lib-dynamodb": "3.1053.0",
     "esbuild": "0.28.0",
     "rss-parser": "3.13.0"
   },
