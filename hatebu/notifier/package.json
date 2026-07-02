@@ -15,9 +15,9 @@
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/aws-lambda": "8.10.161",
     "@types/node": "22.16.0",
-    "@typescript-eslint/eslint-plugin": "8.60.0",
-    "@typescript-eslint/parser": "8.60.0",
-    "eslint": "10.4.0",
+    "@typescript-eslint/eslint-plugin": "8.62.0",
+    "@typescript-eslint/parser": "8.62.0",
+    "eslint": "10.5.0",
     "typescript": "6.0.3"
   }
 }
