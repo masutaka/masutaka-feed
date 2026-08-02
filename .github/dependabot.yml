@@ -48,6 +48,11 @@ updates:
       rss-parser:
         patterns:
           - "rss-parser"
+      security:
+        # セキュリティ更新を全ディレクトリ分まとめて 1 つの PR にする
+        applies-to: "security-updates"
+        patterns:
+          - "*"
       typescript:
         patterns:
           - "typescript"
