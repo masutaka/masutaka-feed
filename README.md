@@ -61,7 +61,7 @@ graph TD
 ### Test Workflow
 - **Trigger**: Push to main branch, Pull Requests
 - **Actions**:
-  - gh_action_lint: Validate GitHub Actions workflows with actionlint and ghalint
+  - gh_action_lint: Validate GitHub Actions workflows with actionlint, ghalint, and zizmor
   - CodeQL: Security vulnerability scanning
   - lint: TypeScript and ESLint static analysis (`make setup lint`)
   - Pushover notification on failure (main branch only)
