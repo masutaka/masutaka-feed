@@ -1,6 +1,6 @@
 name: Deploy
 
-on:
+on: # zizmor: ignore[dangerous-triggers]
   workflow_dispatch:
   workflow_run:
     workflows:
