@@ -61,7 +61,7 @@ graph TD
 ### Test Workflow
 - **Trigger**: Push to main branch, Pull Requests
 - **Actions**:
-  - gh_action_lint: Validate GitHub Actions workflows with actionlint, ghalint, and zizmor
+  - gh_action_lint: Validate GitHub Actions workflows with [gh_action_lint.yml in masutaka/actions](https://github.com/masutaka/actions/blob/main/.github/workflows/gh_action_lint.yml)
   - CodeQL: Security vulnerability scanning
   - lint: TypeScript and ESLint static analysis (`make setup lint`)
   - Pushover notification on failure (main branch only)
