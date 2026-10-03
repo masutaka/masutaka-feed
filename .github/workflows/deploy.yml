@@ -36,6 +36,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
           output-credentials: true # 認証情報を step outputs として出力する
           output-env-credentials: false # 認証情報を環境変数に出力せず、露出範囲を必要な step だけに狭める
+          translate-env-variables: false # 他の action やランナーが設定した環境変数を入力として読み込まない
       - run: make deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws-access-key-id }}
