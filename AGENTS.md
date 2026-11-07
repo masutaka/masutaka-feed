@@ -17,7 +17,7 @@ make lint
 
 ## プロジェクト概要
 
-AWS SAMを使用したサーバーレスアプリケーション。構成図は @README.md の Features 参照。
+AWS SAMを使用したサーバーレスアプリケーション。構成図は @README.md 参照。
 
 ### EventBridge Scheduler
 

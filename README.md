@@ -8,74 +8,54 @@
 [Deploy]: https://github.com/masutaka/masutaka-feed/actions/workflows/deploy.yml?query=branch%3Amain
 [DeepWiki]: https://deepwiki.com/masutaka/masutaka-feed
 
-A serverless application that posts personal GitHub activities and Hatena Bookmark favorites to Mastodon and Pushover (partial for Pushover).
+個人の GitHub のアクティビティと、はてなブックマークのお気に入りを Mastodon に投稿するサーバーレスアプリケーション。
 
-## Features
+## github/
 
-### github/
+タイトルが `GH_TITLE_PUSHOVER_REGEXP` に一致するアクティビティは、Pushover にも送る。
 
 ```mermaid
 graph TD
-    subgraph "Data Source"
-        A[/GitHub private feed/]
+    subgraph "データソース"
+        A[/GitHub のプライベートフィード/]
     end
 
-    subgraph "AWS Infrastructure"
+    subgraph "AWS"
         direction LR
-        G[EventBridge Scheduler<br/>every 5 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
-        H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: send<br/>if new items| Q[[SQS FIFO Queue]]
-        Q -->|5: trigger| D[Notifier Lambda]
-        Q -.->|on repeated failure| X[[Dead Letter Queue]]
+        G[EventBridge Scheduler<br/>5分ごと] -->|1: 起動| H[Feed Subscriber Lambda]
+        H -.->|3: 読み書き| I[(DynamoDB)]
+        H -->|4: 新着があれば<br/>送信| Q[[SQS FIFO キュー]]
+        Q -->|5: 起動| D[Notifier Lambda]
+        Q -.->|失敗が続いたら| X[[デッドレターキュー]]
     end
 
     E[Mastodon]
     F[Pushover]
 
-    A -.->|2: pull| H
-    D -->|6: filtered post| E
-    D -->|6: filtered post| F
+    A -.->|2: 取得| H
+    D -->|6: 絞り込んで投稿| E
+    D -->|6: 絞り込んで投稿| F
 ```
 
-### hatebu/
+## hatebu/
 
 ```mermaid
 graph TD
-    subgraph "Data Source"
-        A[/はてブのお気に入り feed/]
+    subgraph "データソース"
+        A[/はてブのお気に入りフィード/]
     end
 
-    subgraph "AWS Infrastructure"
+    subgraph "AWS"
         direction LR
-        G[EventBridge Scheduler<br/>every 15 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
-        H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: send<br/>if new items| Q[[SQS FIFO Queue]]
-        Q -->|5: trigger| D[Notifier Lambda]
-        Q -.->|on repeated failure| X[[Dead Letter Queue]]
+        G[EventBridge Scheduler<br/>15分ごと] -->|1: 起動| H[Feed Subscriber Lambda]
+        H -.->|3: 読み書き| I[(DynamoDB)]
+        H -->|4: 新着があれば<br/>送信| Q[[SQS FIFO キュー]]
+        Q -->|5: 起動| D[Notifier Lambda]
+        Q -.->|失敗が続いたら| X[[デッドレターキュー]]
     end
 
     E[Mastodon]
 
-    A -.->|2: pull| H
-    D -->|6: post| E
+    A -.->|2: 取得| H
+    D -->|6: 投稿| E
 ```
-
-## CI/CD (GitHub Actions)
-
-### Test Workflow
-- **Trigger**: Push to main branch, Pull Requests
-- **Actions**:
-  - gh_action_lint: Validate GitHub Actions workflows with [gh_action_lint.yml in masutaka/actions](https://github.com/masutaka/actions/blob/main/.github/workflows/gh_action_lint.yml)
-  - CodeQL: Security vulnerability scanning
-  - lint: TypeScript and ESLint static analysis (`make setup lint`)
-  - Pushover notification on failure (main branch only)
-
-### Deploy Workflow
-- **Trigger**: After test workflow success (main branch only)
-- **Authentication**: AWS OIDC for secure access
-- **Deploy**: `make deploy` to deploy SAM application
-- **Region**: ap-northeast-1 (Tokyo)
-
-### Other Workflows
-- **dependency_review**: Check for dependency vulnerabilities on PRs
-- **schedule**: Weekly CodeQL analysis (Friday 19:00 JST)
