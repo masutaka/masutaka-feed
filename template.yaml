@@ -269,6 +269,28 @@ Resources:
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
 
+  # CloudWatch Logs Log Groups
+  GitHubFeedSubscriberLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GitHubFeedSubscriberFunction}
+      RetentionInDays: 400
+  HatebuFeedSubscriberLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${HatebuFeedSubscriberFunction}
+      RetentionInDays: 400
+  GitHubNotifierLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GitHubNotifierFunction}
+      RetentionInDays: 400
+  HatebuNotifierLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${HatebuNotifierFunction}
+      RetentionInDays: 400
+
   # Feed Subscriber Alarms
   GitHubFeedSubscriberErrorAlarm:
     Type: AWS::CloudWatch::Alarm
