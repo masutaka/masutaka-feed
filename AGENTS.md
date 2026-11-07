@@ -33,12 +33,18 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 すべてのLambda関数はNode.js 24（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
 #### Subscriber関数
-- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
-- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
+- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
+- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
 
 #### Notifier関数
-- **GitHubNotifierFunction**: Mastodon/Pushoverへの投稿（タイムアウト: 60秒）
-- **HatebuNotifierFunction**: Mastodonへの投稿（タイムアウト: 60秒）
+- **GitHubNotifierFunction**: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 60秒）
+- **HatebuNotifierFunction**: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
+
+### SQSキュー
+
+SubscriberとNotifierの間をGitHub用・はてブ用それぞれのFIFOキューでつなぎ、エントリーを古い順に投稿する。
+
+MessageGroupIdをキューごとに固定して全体の順序を保つため、失敗したメッセージがDLQに移るまで後続のメッセージは処理されない。順序を守るための仕様として受け入れている。
 
 ### DynamoDBテーブル
 
@@ -58,6 +64,8 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
   - HatebuNotifier: 3回連続でエラー発生（15分間隔で評価）
 
 外部フィードの一時的な5xxなど、次回実行で自然復旧する単発の失敗を通知しない設計。
+
+DLQにメッセージが入ったときも通知する。
 
 ## 主要コマンド
 
@@ -112,6 +120,7 @@ make deploy
   - パラメータオーバーライドの管理
 - **template.yaml**: アプリケーション全体の定義
   - Lambda関数（Feed Subscriber、Notifier）の設定
+  - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
@@ -154,7 +163,7 @@ make deploy
 - **pushover-notifications**: github/notifierでのみ使用
 - **rss-parser**: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - **@aws-sdk/client-dynamodb**, **@aws-sdk/lib-dynamodb**: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
-- **@aws-sdk/client-lambda**: Lambda関数呼び出し（github/subscriber、hatebu/subscriberで使用）
+- **@aws-sdk/client-sqs**: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
 
 ### 開発依存関係
 - **TypeScript**: 型システム

@@ -1,9 +1,9 @@
 import { createRestAPIClient } from 'masto';
-import { Context } from 'aws-lambda';
+import { Context, SQSEvent } from 'aws-lambda';
 import { Pushover } from './pushover';
 
-// github/subscriber/index.ts の DirectInvokeEvent と合わせること
-interface DirectInvokeEvent {
+// github/subscriber/index.ts の QueueMessage と合わせること
+interface QueueMessage {
   entryTitle: string;
   entryUrl: string;
 }
@@ -26,13 +26,21 @@ const pushoverClient = new Pushover({
   token: PUSHOVER_APP_TOKEN,
 });
 
+// BatchSize は 1 なので、Records は 1 件だけ届く
 export const handler = async (
-  event: DirectInvokeEvent,
+  event: SQSEvent,
   _context: Context
 ): Promise<void> => {
-  console.info('Starting GitHub notifier with event:', event);
+  for (const record of event.Records) {
+    const message: QueueMessage = JSON.parse(record.body);
+    await notify(message);
+  }
+};
 
-  const { entryTitle, entryUrl } = event;
+const notify = async (message: QueueMessage): Promise<void> => {
+  console.info('Starting GitHub notifier with message:', message);
+
+  const { entryTitle, entryUrl } = message;
 
   // ワークアラウンド: 相対パスの場合は完全なURLに変換
   const processedUrl = entryUrl.startsWith('/')

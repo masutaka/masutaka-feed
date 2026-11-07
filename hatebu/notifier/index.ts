@@ -1,8 +1,8 @@
 import { createRestAPIClient } from 'masto';
-import { Context } from 'aws-lambda';
+import { Context, SQSEvent } from 'aws-lambda';
 
-// hatebu/subscriber/index.ts の DirectInvokeEvent と合わせること
-interface DirectInvokeEvent {
+// hatebu/subscriber/index.ts の QueueMessage と合わせること
+interface QueueMessage {
   entryAuthor: string;
   entryComment: string;
   entryTitle: string;
@@ -17,14 +17,18 @@ const mastodonClient = createRestAPIClient({
   accessToken: MASTODON_ACCESS_TOKEN,
 });
 
+// BatchSize は 1 なので、Records は 1 件だけ届く
 export const handler = async (
-  event: DirectInvokeEvent,
+  event: SQSEvent,
   _context: Context
 ): Promise<void> => {
-  console.info('Starting Hatebu notifier with event:', event);
+  for (const record of event.Records) {
+    const message: QueueMessage = JSON.parse(record.body);
+    console.info('Starting Hatebu notifier with message:', message);
 
-  const { entryAuthor, entryComment, entryTitle, entryUrl } = event;
-  return await processEntry(entryAuthor, entryComment, entryTitle, entryUrl);
+    const { entryAuthor, entryComment, entryTitle, entryUrl } = message;
+    await processEntry(entryAuthor, entryComment, entryTitle, entryUrl);
+  }
 };
 
 

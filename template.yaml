@@ -122,12 +122,12 @@ Resources:
         Variables:
           FEED_URL: !Ref GitHubFeedUrl
           STATE_TABLE_NAME: !Ref GitHubStateTable
-          TARGET_FUNCTION_ARN: !GetAtt GitHubNotifierFunction.Arn
+          QUEUE_URL: !Ref GitHubQueue
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref GitHubStateTable
-        - LambdaInvokePolicy:
-            FunctionName: !Ref GitHubNotifierFunction
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt GitHubQueue.QueueName
   HatebuFeedSubscriberFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -145,12 +145,44 @@ Resources:
         Variables:
           FEED_URL: !Ref HatebuFeedUrl
           STATE_TABLE_NAME: !Ref HatebuStateTable
-          TARGET_FUNCTION_ARN: !GetAtt HatebuNotifierFunction.Arn
+          QUEUE_URL: !Ref HatebuQueue
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HatebuStateTable
-        - LambdaInvokePolicy:
-            FunctionName: !Ref HatebuNotifierFunction
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt HatebuQueue.QueueName
+
+  # SQS FIFO Queues
+  GitHubQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: masutaka-feed-github.fifo
+      FifoQueue: true
+      VisibilityTimeout: 360 # seconds. AWS recommends at least 6 times the notifier timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt GitHubDeadLetterQueue.Arn
+        maxReceiveCount: 5
+  GitHubDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: masutaka-feed-github-dlq.fifo
+      FifoQueue: true
+      MessageRetentionPeriod: 1209600 # 14 days (maximum)
+  HatebuQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: masutaka-feed-hatebu.fifo
+      FifoQueue: true
+      VisibilityTimeout: 360 # seconds. AWS recommends at least 6 times the notifier timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt HatebuDeadLetterQueue.Arn
+        maxReceiveCount: 5
+  HatebuDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: masutaka-feed-hatebu-dlq.fifo
+      FifoQueue: true
+      MessageRetentionPeriod: 1209600 # 14 days (maximum)
 
   # DynamoDB Tables
   GitHubStateTable:
@@ -195,6 +227,12 @@ Resources:
           - index.ts
     Properties:
       CodeUri: github/notifier/
+      Events:
+        GitHubQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt GitHubQueue.Arn
+            BatchSize: 1
       Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
@@ -217,6 +255,12 @@ Resources:
           - index.ts
     Properties:
       CodeUri: hatebu/notifier/
+      Events:
+        HatebuQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt HatebuQueue.Arn
+            BatchSize: 1
       Description: Hatebu feed notifier Lambda function
       Environment:
         Variables:
@@ -303,6 +347,46 @@ Resources:
       Namespace: AWS/Lambda
       Period: 900 # 15 minutes
       Statistic: Sum
+      Threshold: 0
+      TreatMissingData: ignore
+
+  # Dead Letter Queue Alarms
+  GitHubDeadLetterQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref LambdaAlarmTopic
+      AlarmDescription: Messages arrived in masutaka-feed-github-dlq.fifo
+      AlarmName: github-dead-letter-queue-messages
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt GitHubDeadLetterQueue.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300 # 5 minutes
+      Statistic: Maximum
+      Threshold: 0
+      TreatMissingData: ignore
+  HatebuDeadLetterQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref LambdaAlarmTopic
+      AlarmDescription: Messages arrived in masutaka-feed-hatebu-dlq.fifo
+      AlarmName: hatebu-dead-letter-queue-messages
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt HatebuDeadLetterQueue.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300 # 5 minutes
+      Statistic: Maximum
       Threshold: 0
       TreatMissingData: ignore
 
