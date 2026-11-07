@@ -17,7 +17,8 @@ const mastodonClient = createRestAPIClient({
   accessToken: MASTODON_ACCESS_TOKEN,
 });
 
-// BatchSize は 1 なので、Records は 1 件だけ届く
+// BatchSize を 1 にしているので、Records は 1 件だけ届く。
+// 上げると、バッチ内の一部が失敗したときに成功した分も再投稿される。
 export const handler = async (
   event: SQSEvent,
   _context: Context
