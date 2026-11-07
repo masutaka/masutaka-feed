@@ -19,9 +19,9 @@ interface HatebuFeedItem {
 
   // rss-parser は RSS 1.0 形式の場合、<description> タグの内容を以下のフィールドに自動的に格納する:
   // - content: description の内容（HTML エンティティがデコードされる）
-  // - contentSnippet: content から HTML タグを除去した純粋なテキスト
+  // - contentSnippet: content から HTML タグを除去したプレーンテキスト
   // はてなブックマークの RSS フィードでは、ユーザーのコメントは description タグに含まれているため、
-  // contentSnippet フィールドにコメントの純粋なテキストが格納される。
+  // contentSnippet フィールドにコメントのプレーンテキストが格納される。
   contentSnippet: string;
 }
 

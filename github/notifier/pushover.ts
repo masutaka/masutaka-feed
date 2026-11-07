@@ -2,7 +2,7 @@
  * pushover-notifications パッケージの TypeScript ラッパー
  * 
  * pushover-notifications は JavaScript で書かれており型定義がないため、
- * このファイルで型安全性を提供します。
+ * このファイルで型を定義します。
  */
 
 /**

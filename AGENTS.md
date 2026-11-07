@@ -2,7 +2,7 @@
 
 ## 重要事項
 
-**コード実装後は、必ず以下の成功を確認すること：**
+**コード実装後は、必ず以下のコマンドが成功することを確認すること：**
 
 ```bash
 # TypeScriptとESLintのエラーがないことを確認
@@ -23,8 +23,8 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 定期的にLambda関数を起動するスケジューラー：
 
-- **github-feed-subscriber-schedule**: 5分ごとにGitHubFeedSubscriberFunctionを起動
-- **hatebu-feed-subscriber-schedule**: 15分ごとにHatebuFeedSubscriberFunctionを起動
+- `github-feed-subscriber-schedule`: 5分ごとにGitHubFeedSubscriberFunctionを起動
+- `hatebu-feed-subscriber-schedule`: 15分ごとにHatebuFeedSubscriberFunctionを起動
 
 各スケジューラーには専用のIAMロール（GitHubSchedulerRole、HatebuSchedulerRole）が設定され、対象のLambda関数のみを呼び出す権限を持つ。
 
@@ -33,12 +33,12 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 すべてのLambda関数はNode.js 24（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
 #### Subscriber関数
-- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
-- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
+- `GitHubFeedSubscriberFunction`: GitHubフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
+- `HatebuFeedSubscriberFunction`: はてブフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
 
 #### Notifier関数
-- **GitHubNotifierFunction**: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 60秒）
-- **HatebuNotifierFunction**: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
+- `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 60秒）
+- `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
 
@@ -48,16 +48,15 @@ MessageGroupIdをキューごとに固定して全体の順序を保つため、
 
 ### DynamoDBテーブル
 
-- **masutaka-feed-github-state**: GitHub処理済みエントリーを管理（TTL: 30日）
-- **masutaka-feed-hatebu-state**: はてブ処理済みエントリーを管理（TTL: 30日）
+- `masutaka-feed-github-state`: GitHub処理済みエントリーを管理（TTL: 30日）
+- `masutaka-feed-hatebu-state`: はてブ処理済みエントリーを管理（TTL: 30日）
 
 ### CloudWatchアラーム
 
 Subscriber関数のエラーと、DLQへのメッセージの到着を監視する：
 
-- **監視内容**: Subscriber関数のエラー発生、DLQへのメッセージの到着
-- **通知先**: masutaka-feed-lambda-alarms SNSトピック
-- **Subscriber関数の閾値**:
+- 通知先: masutaka-feed-lambda-alarms SNSトピック
+- Subscriber関数の閾値:
   - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
   - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）
 
@@ -115,16 +114,16 @@ make deploy
 ## 開発のポイント
 
 ### AWS SAM（Serverless Application Model）
-- **samconfig.toml**: SAMデプロイメント設定
+- `samconfig.toml`: SAMデプロイメント設定
   - スタック名、リージョン、S3バケットなどの設定
   - パラメータオーバーライドの管理
-- **template.yaml**: アプリケーション全体の定義
+- `template.yaml`: アプリケーション全体の定義
   - Lambda関数（Feed Subscriber、Notifier）の設定
   - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
-- **ビルドプロセス**: esbuildを使用したTypeScriptのトランスパイル
+- ビルドプロセス: esbuildを使用したTypeScriptのトランスパイル
   - `make build`でSAMビルドを実行
   - Lambda関数ごとに最適化されたバンドルを生成
 
@@ -137,36 +136,36 @@ make deploy
 ### 開発ワークフロー
 - ESLint（Flat Config形式）による静的解析
 - TypeScriptの型チェック（`make lint`）
-- エラーハンドリングとCloudWatch Alarmsが設定済み
+- エラーハンドリングを実装済みで、CloudWatchアラームも設定済み
 
 ### 環境変数
 
 #### GitHub関連
-- **GH_FEED_URL**: GitHubプライベートフィードのURL（トークン付き）
-- **GH_TITLE_IGNORE_REGEXP**: 無視するタイトルの正規表現パターン
-- **GH_URL_IGNORE_REGEXP**: 無視するURLの正規表現パターン
-- **GH_TITLE_PUSHOVER_REGEXP**: Pushoverに送信するタイトルの正規表現パターン
+- `GH_FEED_URL`: GitHubプライベートフィードのURL（トークン付き）
+- `GH_TITLE_IGNORE_REGEXP`: 無視するタイトルの正規表現パターン
+- `GH_URL_IGNORE_REGEXP`: 無視するURLの正規表現パターン
+- `GH_TITLE_PUSHOVER_REGEXP`: Pushoverに送信するタイトルの正規表現パターン
 
 #### はてブ関連
-- **HATEBU_FEED_URL**: はてブお気に入りフィードのURL（キー付き）
+- `HATEBU_FEED_URL`: はてブお気に入りフィードのURL（キー付き）
 
 #### 外部サービス認証
-- **PUSHOVER_APP_TOKEN**: Pushover APIのアプリケーショントークン
-- **PUSHOVER_USER_KEY**: Pushover APIのユーザーキー
-- **MASTODON_URL**: MastodonインスタンスのURL
-- **MASTODON_ACCESS_TOKEN**: Mastodon APIのアクセストークン
+- `PUSHOVER_APP_TOKEN`: Pushover APIのアプリケーショントークン
+- `PUSHOVER_USER_KEY`: Pushover APIのユーザーキー
+- `MASTODON_URL`: MastodonインスタンスのURL
+- `MASTODON_ACCESS_TOKEN`: Mastodon APIのアクセストークン
 
 ## 依存関係
 
 ### プロダクション依存関係
-- **masto**: Mastodon API クライアント（github/notifier、hatebu/notifierで使用）
-- **pushover-notifications**: github/notifierでのみ使用
-- **rss-parser**: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
-- **@aws-sdk/client-dynamodb**, **@aws-sdk/lib-dynamodb**: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
-- **@aws-sdk/client-sqs**: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
+- `masto`: Mastodon API クライアント（github/notifier、hatebu/notifierで使用）
+- `pushover-notifications`: github/notifierでのみ使用
+- `rss-parser`: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
+- `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
+- `@aws-sdk/client-sqs`: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
 
 ### 開発依存関係
-- **TypeScript**: 型システム
-- **ESLint**: コード品質チェック（@typescript-eslint/parser, @typescript-eslint/eslint-plugin）
-- **esbuild**: 高速ビルドツール
-- **@types/aws-lambda**, **@types/node**: 型定義
+- TypeScript: 型システム
+- ESLint: コード品質チェック（@typescript-eslint/parser, @typescript-eslint/eslint-plugin）
+- `esbuild`: 高速ビルドツール
+- `@types/aws-lambda`, `@types/node`: 型定義

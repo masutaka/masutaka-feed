@@ -16,7 +16,7 @@ interface GitHubFeedItem {
   content: string;  //   <content type="html">...</content>
                     // </entry>
 
-  // rss-parser が content から HTML タグを除去した純粋なテキストに変換する
+  // rss-parser が content から HTML タグを除去したプレーンテキストに変換する
   contentSnippet: string;
 }
 
