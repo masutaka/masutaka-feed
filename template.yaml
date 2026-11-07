@@ -9,26 +9,33 @@ Parameters:
     NoEcho: true
   GithubTitleIgnoreRegexp:
     Type: String
+    Description: "Regexp for titles of entries not to post"
     NoEcho: true
   GithubUrlIgnoreRegexp:
     Type: String
+    Description: "Regexp for URLs of entries not to post"
     NoEcho: true
   GithubTitlePushoverRegexp:
     Type: String
+    Description: "Regexp for titles of entries also sent to Pushover"
   HatebuFeedUrl:
     Type: String
     Description: "Hatebu feed URL with key"
     NoEcho: true
   PushoverAppToken:
     Type: String
+    Description: "Pushover API application token"
     NoEcho: true
   PushoverUserKey:
     Type: String
+    Description: "Pushover API user key"
     NoEcho: true
   MastodonUrl:
     Type: String
+    Description: "Mastodon instance URL"
   MastodonAccessToken:
     Type: String
+    Description: "Mastodon API access token"
     NoEcho: true
 
 # More info about Globals: https://github.com/aws/serverless-application-model/blob/master/docs/globals.rst
@@ -47,6 +54,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: github-feed-subscriber-schedule
+      Description: Periodically invokes GitHubFeedSubscriberFunction
       ScheduleExpression: "rate(5 minutes)"
       Target:
         Arn: !GetAtt GitHubFeedSubscriberFunction.Arn
@@ -58,6 +66,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: hatebu-feed-subscriber-schedule
+      Description: Periodically invokes HatebuFeedSubscriberFunction
       ScheduleExpression: "rate(15 minutes)"
       Target:
         Arn: !GetAtt HatebuFeedSubscriberFunction.Arn
@@ -70,6 +79,7 @@ Resources:
   GitHubFeedSchedulerRole:
     Type: AWS::IAM::Role
     Properties:
+      Description: Allows EventBridge Scheduler to invoke GitHubFeedSubscriberFunction
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -88,6 +98,7 @@ Resources:
   HatebuFeedSchedulerRole:
     Type: AWS::IAM::Role
     Properties:
+      Description: Allows EventBridge Scheduler to invoke HatebuFeedSubscriberFunction
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
