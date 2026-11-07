@@ -309,47 +309,6 @@ Resources:
       Threshold: 0
       TreatMissingData: ignore
 
-  # Feed Notifier Alarms
-  GitHubNotifierErrorAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: Any errors occurred in github-notifier
-      AlarmName: github-notifier-errors
-      ComparisonOperator: GreaterThanThreshold
-      DatapointsToAlarm: 3
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref GitHubNotifierFunction
-      EvaluationPeriods: 3
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 900 # 15 minutes
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: ignore
-
-  HatebuNotifierErrorAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref LambdaAlarmTopic
-      AlarmDescription: Any errors occurred in hatebu-notifier
-      AlarmName: hatebu-notifier-errors
-      ComparisonOperator: GreaterThanThreshold
-      DatapointsToAlarm: 3
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref HatebuNotifierFunction
-      EvaluationPeriods: 3
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 900 # 15 minutes
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: ignore
-
   # Dead Letter Queue Alarms
   GitHubDeadLetterQueueAlarm:
     Type: AWS::CloudWatch::Alarm

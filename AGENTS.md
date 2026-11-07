@@ -53,19 +53,17 @@ MessageGroupIdをキューごとに固定して全体の順序を保つため、
 
 ### CloudWatchアラーム
 
-すべてのLambda関数に対してエラーアラームを設定：
+Subscriber関数のエラーと、DLQへのメッセージの到着を監視する：
 
-- **監視内容**: Lambda関数のエラー発生
+- **監視内容**: Subscriber関数のエラー発生、DLQへのメッセージの到着
 - **通知先**: masutaka-feed-lambda-alarms SNSトピック
-- **各関数の閾値**:
+- **Subscriber関数の閾値**:
   - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
   - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）
-  - GitHubNotifier: 3回連続でエラー発生（15分間隔で評価）
-  - HatebuNotifier: 3回連続でエラー発生（15分間隔で評価）
 
 外部フィードの一時的な5xxなど、次回実行で自然復旧する単発の失敗を通知しない設計。
 
-DLQにメッセージが入ったときも通知する。
+Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試行で復旧し、失敗し続けたメッセージはDLQに移ってDLQのアラームで通知されるため。
 
 ## 主要コマンド
 
