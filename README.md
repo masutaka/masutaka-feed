@@ -12,8 +12,6 @@
 
 ## github/
 
-タイトルが `GH_TITLE_PUSHOVER_REGEXP` に一致するアクティビティは、Pushover にも送る。
-
 ```mermaid
 graph TD
     subgraph "データソース"
@@ -36,6 +34,12 @@ graph TD
     D -->|6: 絞り込んで投稿| E
     D -->|6: 絞り込んで投稿| F
 ```
+
+> [!NOTE]
+> 「6: 絞り込んで投稿」の条件は次のとおり。
+>
+> - Mastodon: `GH_TITLE_IGNORE_REGEXP` か `GH_URL_IGNORE_REGEXP` に一致するものを除いて投稿する
+> - Pushover: Mastodon に投稿したもののうち、タイトルが `GH_TITLE_PUSHOVER_REGEXP` に一致するものだけを送る
 
 ## hatebu/
 
