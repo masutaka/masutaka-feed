@@ -24,15 +24,17 @@ graph TD
         direction LR
         G[EventBridge Scheduler<br/>every 5 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
         H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: invoke<br/>if new items| D[Notifier Lambda]
+        H -->|4: send<br/>if new items| Q[[SQS FIFO Queue]]
+        Q -->|5: trigger| D[Notifier Lambda]
+        Q -.->|on repeated failure| X[[Dead Letter Queue]]
     end
 
     E[Mastodon]
     F[Pushover]
 
     A -.->|2: pull| H
-    D -->|5: filtered post| E
-    D -->|5: filtered post| F
+    D -->|6: filtered post| E
+    D -->|6: filtered post| F
 ```
 
 ### hatebu/
@@ -47,13 +49,15 @@ graph TD
         direction LR
         G[EventBridge Scheduler<br/>every 15 minutes] -->|1: trigger| H[Feed Subscriber Lambda]
         H -.->|3: read/write| I[(DynamoDB)]
-        H -->|4: invoke<br/>if new items| D[Notifier Lambda]
+        H -->|4: send<br/>if new items| Q[[SQS FIFO Queue]]
+        Q -->|5: trigger| D[Notifier Lambda]
+        Q -.->|on repeated failure| X[[Dead Letter Queue]]
     end
 
     E[Mastodon]
 
     A -.->|2: pull| H
-    D -->|5: post| E
+    D -->|6: post| E
 ```
 
 ## CI/CD (GitHub Actions)

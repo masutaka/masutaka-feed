@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+import { createHash } from 'node:crypto';
 import Parser from 'rss-parser'; // eslint-disable-line @typescript-eslint/naming-convention
 
 interface HatebuFeedItem {
@@ -24,8 +25,8 @@ interface HatebuFeedItem {
   contentSnippet: string;
 }
 
-// hatebu/notifier/index.ts の DirectInvokeEvent と合わせること
-interface DirectInvokeEvent {
+// hatebu/notifier/index.ts の QueueMessage と合わせること
+interface QueueMessage {
   entryAuthor: string;
   entryComment: string;
   entryTitle: string;
@@ -34,10 +35,13 @@ interface DirectInvokeEvent {
 
 const FEED_URL = process.env.FEED_URL!;
 const STATE_TABLE_NAME = process.env.STATE_TABLE_NAME!;
-const TARGET_FUNCTION_ARN = process.env.TARGET_FUNCTION_ARN!;
+const QUEUE_URL = process.env.QUEUE_URL!;
 
 const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const lambdaClient = new LambdaClient({});
+const sqsClient = new SQSClient({});
+
+// FIFO キューはメッセージグループごとに順序を保証するため、グループを 1 つに固定して全体の順序を保つ
+const MESSAGE_GROUP_ID = 'hatebu';
 
 export const handler = async (): Promise<void> => {
   console.info('Starting Hatebu feed subscription');
@@ -48,7 +52,8 @@ export const handler = async (): Promise<void> => {
 
     console.info(`Processing ${feed.items.length} feed items`);
 
-    for (const item of feed.items) {
+    // フィードは新しい順に並んでいるため、古い順に投稿されるよう逆順に処理する
+    for (const item of [...feed.items].reverse()) {
       const entryId = item['rdf:about']?.trim();
       if (!entryId) {
         console.warn('Skipping item without ID or with empty ID:', item);
@@ -58,7 +63,7 @@ export const handler = async (): Promise<void> => {
       const isNew = await checkIfNewEntry(entryId, STATE_TABLE_NAME);
 
       if (isNew) {
-        await processNewEntry(entryId, item, TARGET_FUNCTION_ARN, STATE_TABLE_NAME);
+        await processNewEntry(entryId, item, QUEUE_URL, STATE_TABLE_NAME);
       } else {
         console.info(`Skipping already processed entry: ${entryId}`);
       }
@@ -87,12 +92,12 @@ const checkIfNewEntry = async (entryId: string, tableName: string): Promise<bool
 const processNewEntry = async (
   entryId: string,
   item: HatebuFeedItem,
-  targetFunctionArn: string,
+  queueUrl: string,
   tableName: string
 ): Promise<void> => {
   console.info(`Processing new entry: ${entryId}`);
 
-  const payload: DirectInvokeEvent = {
+  const message: QueueMessage = {
     entryAuthor: item['dc:creator'],
     entryComment: item.contentSnippet,
     entryTitle: item.title,
@@ -100,15 +105,13 @@ const processNewEntry = async (
   };
 
   try {
-    const response = await lambdaClient.send(new InvokeCommand({
-      FunctionName: targetFunctionArn,
-      InvocationType: 'RequestResponse',
-      Payload: Buffer.from(JSON.stringify(payload))
+    await sqsClient.send(new SendMessageCommand({
+      QueueUrl: queueUrl,
+      MessageBody: JSON.stringify(message),
+      MessageGroupId: MESSAGE_GROUP_ID,
+      // MessageDeduplicationId は 128 文字までで、使える文字も限られるため、entry ID のハッシュ値を使う
+      MessageDeduplicationId: createHash('sha256').update(entryId).digest('hex'),
     }));
-
-    if (response.FunctionError) {
-      throw new Error(`Notifier failed: ${response.FunctionError}`);
-    }
 
     await markAsProcessed(entryId, item, tableName);
     console.info(`Successfully processed entry: ${entryId}`);

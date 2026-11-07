@@ -33,12 +33,18 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 すべてのLambda関数はNode.js 24（arm64アーキテクチャ）で動作。TypeScriptで実装されており、esbuildでビルドされる。
 
 #### Subscriber関数
-- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
-- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック（タイムアウト: 60秒）
+- **GitHubFeedSubscriberFunction**: GitHubフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
+- **HatebuFeedSubscriberFunction**: はてブフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
 
 #### Notifier関数
-- **GitHubNotifierFunction**: Mastodon/Pushoverへの投稿（タイムアウト: 60秒）
-- **HatebuNotifierFunction**: Mastodonへの投稿（タイムアウト: 60秒）
+- **GitHubNotifierFunction**: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 60秒）
+- **HatebuNotifierFunction**: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
+
+### SQSキュー
+
+SubscriberとNotifierの間をGitHub用・はてブ用それぞれのFIFOキューでつなぎ、エントリーを古い順に投稿する。
+
+MessageGroupIdをキューごとに固定して全体の順序を保つため、失敗したメッセージがDLQに移るまで後続のメッセージは処理されない。順序を守るための仕様として受け入れている。
 
 ### DynamoDBテーブル
 
@@ -47,17 +53,19 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 ### CloudWatchアラーム
 
-すべてのLambda関数に対してエラーアラームを設定：
+Subscriber関数のエラーと、DLQへのメッセージの到着を監視する：
 
-- **監視内容**: Lambda関数のエラー発生
+- **監視内容**: Subscriber関数のエラー発生、DLQへのメッセージの到着
 - **通知先**: masutaka-feed-lambda-alarms SNSトピック
-- **各関数の閾値**:
+- **Subscriber関数の閾値**:
   - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
   - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）
-  - GitHubNotifier: 3回連続でエラー発生（15分間隔で評価）
-  - HatebuNotifier: 3回連続でエラー発生（15分間隔で評価）
 
 外部フィードの一時的な5xxなど、次回実行で自然復旧する単発の失敗を通知しない設計。
+
+Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試行で復旧し、失敗し続けたメッセージはDLQに移ってDLQのアラームで通知されるため。
+
+DLQのアラームは、DLQにメッセージが残っている間はALARMのままなので、次にDLQに移ったメッセージは通知されない。通知を受けたら、DLQのメッセージを元のキューに戻すか削除して、DLQを空にする。元のキューに戻したメッセージはキューの末尾に入るため、投稿は古い順にならない。
 
 ## 主要コマンド
 
@@ -112,6 +120,7 @@ make deploy
   - パラメータオーバーライドの管理
 - **template.yaml**: アプリケーション全体の定義
   - Lambda関数（Feed Subscriber、Notifier）の設定
+  - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
@@ -154,7 +163,7 @@ make deploy
 - **pushover-notifications**: github/notifierでのみ使用
 - **rss-parser**: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - **@aws-sdk/client-dynamodb**, **@aws-sdk/lib-dynamodb**: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
-- **@aws-sdk/client-lambda**: Lambda関数呼び出し（github/subscriber、hatebu/subscriberで使用）
+- **@aws-sdk/client-sqs**: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
 
 ### 開発依存関係
 - **TypeScript**: 型システム
