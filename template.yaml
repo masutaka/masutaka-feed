@@ -393,7 +393,7 @@ Resources:
           "periodOverride": "auto",
           "widgets": [
             {
-              "type": "metric", "x": 0, "y": 0, "width": 6, "height": 6,
+              "type": "metric", "x": 0, "y": 0, "width": 12, "height": 6,
               "properties": {
                 "title": "Lambda / Errors / GitHubFeedSubscriber",
                 "view": "timeSeries",
@@ -403,20 +403,17 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 6, "y": 0, "width": 6, "height": 6,
+              "type": "metric", "x": 12, "y": 0, "width": 12, "height": 6,
               "properties": {
-                "title": "Lambda / Errors / GitHubNotifier",
+                "title": "SQS / DLQ Messages / GitHub",
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "${AWS::Region}",
-                "metrics": [
-                  ["AWS/Lambda", "Errors", "FunctionName", "${GitHubNotifierFunction}", { "stat": "Sum" }]
-                ],
-                "period": 900
+                "annotations": { "alarms": ["${GitHubDeadLetterQueueAlarm.Arn}"] }
               }
             },
             {
-              "type": "metric", "x": 12, "y": 0, "width": 6, "height": 6,
+              "type": "metric", "x": 0, "y": 6, "width": 12, "height": 6,
               "properties": {
                 "title": "Lambda / Errors / HatebuFeedSubscriber",
                 "view": "timeSeries",
@@ -426,20 +423,17 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 18, "y": 0, "width": 6, "height": 6,
+              "type": "metric", "x": 12, "y": 6, "width": 12, "height": 6,
               "properties": {
-                "title": "Lambda / Errors / HatebuNotifier",
+                "title": "SQS / DLQ Messages / Hatebu",
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "${AWS::Region}",
-                "metrics": [
-                  ["AWS/Lambda", "Errors", "FunctionName", "${HatebuNotifierFunction}", { "stat": "Sum" }]
-                ],
-                "period": 900
+                "annotations": { "alarms": ["${HatebuDeadLetterQueueAlarm.Arn}"] }
               }
             },
             {
-              "type": "metric", "x": 0, "y": 6, "width": 8, "height": 6,
+              "type": "metric", "x": 0, "y": 12, "width": 12, "height": 6,
               "properties": {
                 "title": "Lambda / Invocations Sum",
                 "view": "timeSeries",
@@ -456,7 +450,24 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 8, "y": 6, "width": 8, "height": 6,
+              "type": "metric", "x": 12, "y": 12, "width": 12, "height": 6,
+              "properties": {
+                "title": "Lambda / Errors Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "legend": { "position": "bottom" },
+                "period": 300,
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${GitHubFeedSubscriberFunction}", { "stat": "Sum", "label": "GitHubFeedSubscriber" }],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${GitHubNotifierFunction}", { "stat": "Sum", "label": "GitHubNotifier" }],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${HatebuFeedSubscriberFunction}", { "stat": "Sum", "label": "HatebuFeedSubscriber" }],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${HatebuNotifierFunction}", { "stat": "Sum", "label": "HatebuNotifier" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 18, "width": 12, "height": 6,
               "properties": {
                 "title": "Lambda / Duration Average",
                 "view": "timeSeries",
@@ -473,7 +484,7 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 16, "y": 6, "width": 8, "height": 6,
+              "type": "metric", "x": 12, "y": 18, "width": 12, "height": 6,
               "properties": {
                 "title": "Lambda / Throttles Sum",
                 "view": "timeSeries",
@@ -490,7 +501,7 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 0, "y": 12, "width": 12, "height": 6,
+              "type": "metric", "x": 0, "y": 24, "width": 12, "height": 6,
               "properties": {
                 "title": "DynamoDB / ConsumedReadCapacityUnits Sum",
                 "view": "timeSeries",
@@ -505,7 +516,7 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 12, "y": 12, "width": 12, "height": 6,
+              "type": "metric", "x": 12, "y": 24, "width": 12, "height": 6,
               "properties": {
                 "title": "DynamoDB / ConsumedWriteCapacityUnits Sum",
                 "view": "timeSeries",
@@ -520,7 +531,7 @@ Resources:
               }
             },
             {
-              "type": "metric", "x": 0, "y": 18, "width": 24, "height": 6,
+              "type": "metric", "x": 0, "y": 30, "width": 12, "height": 6,
               "properties": {
                 "title": "DynamoDB / PutItem cumulative count",
                 "view": "timeSeries",
