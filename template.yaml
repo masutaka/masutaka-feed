@@ -382,6 +382,164 @@ Resources:
       Threshold: 0
       TreatMissingData: ignore
 
+  # CloudWatch Dashboard
+  FeedDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: masutaka-feed
+      DashboardBody: !Sub |
+        {
+          "start": "-P3M",
+          "periodOverride": "auto",
+          "widgets": [
+            {
+              "type": "metric", "x": 0, "y": 0, "width": 6, "height": 6,
+              "properties": {
+                "title": "Lambda / Errors / GitHubFeedSubscriber",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "annotations": { "alarms": ["${GitHubFeedSubscriberErrorAlarm.Arn}"] }
+              }
+            },
+            {
+              "type": "metric", "x": 6, "y": 0, "width": 6, "height": 6,
+              "properties": {
+                "title": "Lambda / Errors / GitHubNotifier",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${GitHubNotifierFunction}", { "stat": "Sum" }]
+                ],
+                "period": 900
+              }
+            },
+            {
+              "type": "metric", "x": 12, "y": 0, "width": 6, "height": 6,
+              "properties": {
+                "title": "Lambda / Errors / HatebuFeedSubscriber",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "annotations": { "alarms": ["${HatebuFeedSubscriberErrorAlarm.Arn}"] }
+              }
+            },
+            {
+              "type": "metric", "x": 18, "y": 0, "width": 6, "height": 6,
+              "properties": {
+                "title": "Lambda / Errors / HatebuNotifier",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${HatebuNotifierFunction}", { "stat": "Sum" }]
+                ],
+                "period": 900
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 6, "width": 8, "height": 6,
+              "properties": {
+                "title": "Lambda / Invocations Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "legend": { "position": "bottom" },
+                "period": 300,
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${GitHubFeedSubscriberFunction}", { "stat": "Sum", "region": "${AWS::Region}", "label": "GitHubFeedSubscriber" }],
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${GitHubNotifierFunction}", { "stat": "Sum", "region": "${AWS::Region}", "label": "GitHubNotifier" }],
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${HatebuFeedSubscriberFunction}", { "stat": "Sum", "region": "${AWS::Region}", "label": "HatebuFeedSubscriber" }],
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${HatebuNotifierFunction}", { "stat": "Sum", "region": "${AWS::Region}", "label": "HatebuNotifier" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 8, "y": 6, "width": 8, "height": 6,
+              "properties": {
+                "title": "Lambda / Duration Average",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "legend": { "position": "bottom" },
+                "period": 300,
+                "metrics": [
+                  ["AWS/Lambda", "Duration", "FunctionName", "${GitHubFeedSubscriberFunction}", { "label": "GitHubFeedSubscriber" }],
+                  ["AWS/Lambda", "Duration", "FunctionName", "${GitHubNotifierFunction}", { "label": "GitHubNotifier" }],
+                  ["AWS/Lambda", "Duration", "FunctionName", "${HatebuFeedSubscriberFunction}", { "label": "HatebuFeedSubscriber" }],
+                  ["AWS/Lambda", "Duration", "FunctionName", "${HatebuNotifierFunction}", { "label": "HatebuNotifier" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 16, "y": 6, "width": 8, "height": 6,
+              "properties": {
+                "title": "Lambda / Throttles Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "legend": { "position": "bottom" },
+                "period": 300,
+                "metrics": [
+                  ["AWS/Lambda", "Throttles", "FunctionName", "${GitHubFeedSubscriberFunction}", { "stat": "Sum", "label": "GitHubFeedSubscriber" }],
+                  ["AWS/Lambda", "Throttles", "FunctionName", "${GitHubNotifierFunction}", { "stat": "Sum", "label": "GitHubNotifier" }],
+                  ["AWS/Lambda", "Throttles", "FunctionName", "${HatebuFeedSubscriberFunction}", { "stat": "Sum", "label": "HatebuFeedSubscriber" }],
+                  ["AWS/Lambda", "Throttles", "FunctionName", "${HatebuNotifierFunction}", { "stat": "Sum", "label": "HatebuNotifier" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 12, "width": 12, "height": 6,
+              "properties": {
+                "title": "DynamoDB / ConsumedReadCapacityUnits Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "period": 300,
+                "legend": { "position": "bottom" },
+                "metrics": [
+                  ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "${GitHubStateTable}", { "stat": "Sum", "label": "github" }],
+                  ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "${HatebuStateTable}", { "stat": "Sum", "label": "hatebu" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 12, "y": 12, "width": 12, "height": 6,
+              "properties": {
+                "title": "DynamoDB / ConsumedWriteCapacityUnits Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "period": 300,
+                "legend": { "position": "bottom" },
+                "metrics": [
+                  ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "${GitHubStateTable}", { "stat": "Sum", "label": "github" }],
+                  ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "${HatebuStateTable}", { "stat": "Sum", "label": "hatebu" }]
+                ]
+              }
+            },
+            {
+              "type": "metric", "x": 0, "y": 18, "width": 24, "height": 6,
+              "properties": {
+                "title": "DynamoDB / PutItem cumulative count",
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "period": 3600,
+                "legend": { "position": "bottom" },
+                "metrics": [
+                  [{ "expression": "RUNNING_SUM(m1)", "label": "github", "id": "e1" }],
+                  ["AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "${GitHubStateTable}", "Operation", "PutItem", { "stat": "SampleCount", "id": "m1", "visible": false }],
+                  [{ "expression": "RUNNING_SUM(m2)", "label": "hatebu", "id": "e2" }],
+                  ["AWS/DynamoDB", "SuccessfulRequestLatency", "TableName", "${HatebuStateTable}", "Operation", "PutItem", { "stat": "SampleCount", "id": "m2", "visible": false }]
+                ],
+                "yAxis": { "left": { "label": "Count", "showUnits": false } }
+              }
+            }
+          ]
+        }
+
   # SNS Topic for Lambda Alarms
   # Note: SNS Subscription (email) is manually configured via AWS Console
   LambdaAlarmTopic:
