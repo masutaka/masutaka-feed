@@ -75,8 +75,9 @@ build: validate
 # ローカルで誤ってデプロイしづらいようにする
 DEPLOY_OPTIONS := $(if $(CI),--no-confirm-changeset,)
 
+# ビルド成果物がなければ SAM は元の template.yaml にフォールバックし、TypeScript のままのデプロイが成功扱いになるため、前提にして存在を確認する
 .PHONY: deploy
-deploy: validate-envs build
+deploy: validate-envs .aws-sam/build/template.yaml
 	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
 		GitHubFeedUrl="$$GH_FEED_URL" \
 		GithubTitleIgnoreRegexp="$$GH_TITLE_IGNORE_REGEXP" \
