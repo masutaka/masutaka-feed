@@ -89,7 +89,7 @@ make validate
 # SAMビルド（esbuildでTypeScriptをトランスパイル）
 make build
 
-# SAMデプロイ
+# SAMデプロイ（先に make build が必要）
 make deploy
 ```
 
