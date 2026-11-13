@@ -89,6 +89,10 @@ deploy: validate-envs .aws-sam/build/template.yaml
 		MastodonUrl="$$MASTODON_URL" \
 		MastodonAccessToken="$$MASTODON_ACCESS_TOKEN"
 
+.PHONY: deploy-bootstrap
+deploy-bootstrap:
+	@$(AWS) cloudformation deploy --template-file bootstrap.yaml --stack-name bootstrap --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
+
 # .PHONY: destroy
 # destroy:
 # 	@$(AWS) cloudformation delete-stack --stack-name $(STACK_NAME)
