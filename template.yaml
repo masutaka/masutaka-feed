@@ -61,8 +61,7 @@ Resources:
         RoleArn: !GetAtt GitHubFeedSchedulerRole.Arn
       FlexibleTimeWindow:
         Mode: "OFF"
-      # AWS アカウントの移行中は、DynamoDB のコピー前に動いて過去のエントリーを再投稿しないよう止める
-      State: "DISABLED"
+      State: "ENABLED"
   HatebuFeedScheduler:
     Type: AWS::Scheduler::Schedule
     Properties:
@@ -74,7 +73,7 @@ Resources:
         RoleArn: !GetAtt HatebuFeedSchedulerRole.Arn
       FlexibleTimeWindow:
         Mode: "OFF"
-      State: "DISABLED"
+      State: "ENABLED"
 
   # EventBridge Scheduler IAM Roles
   GitHubFeedSchedulerRole:
