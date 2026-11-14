@@ -167,7 +167,7 @@ Resources:
   GitHubQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: masutaka-feed-github.fifo
+      QueueName: github.fifo
       FifoQueue: true
       VisibilityTimeout: 360 # seconds. AWS recommends at least 6 times the notifier timeout
       RedrivePolicy:
@@ -176,13 +176,13 @@ Resources:
   GitHubDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: masutaka-feed-github-dlq.fifo
+      QueueName: github-dlq.fifo
       FifoQueue: true
       MessageRetentionPeriod: 1209600 # 14 days (maximum)
   HatebuQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: masutaka-feed-hatebu.fifo
+      QueueName: hatebu.fifo
       FifoQueue: true
       VisibilityTimeout: 360 # seconds. AWS recommends at least 6 times the notifier timeout
       RedrivePolicy:
@@ -191,7 +191,7 @@ Resources:
   HatebuDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: masutaka-feed-hatebu-dlq.fifo
+      QueueName: hatebu-dlq.fifo
       FifoQueue: true
       MessageRetentionPeriod: 1209600 # 14 days (maximum)
 
@@ -199,7 +199,7 @@ Resources:
   GitHubStateTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: masutaka-feed-github-state
+      TableName: github-state
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: entry_id
@@ -213,7 +213,7 @@ Resources:
   HatebuStateTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: masutaka-feed-hatebu-state
+      TableName: hatebu-state
       BillingMode: PAY_PER_REQUEST
       KeySchema:
         - AttributeName: entry_id
@@ -348,7 +348,7 @@ Resources:
     Properties:
       AlarmActions:
         - !Ref LambdaAlarmTopic
-      AlarmDescription: Messages arrived in masutaka-feed-github-dlq.fifo
+      AlarmDescription: Messages arrived in github-dlq.fifo
       AlarmName: github-dead-letter-queue-messages
       ComparisonOperator: GreaterThanThreshold
       DatapointsToAlarm: 1
@@ -367,7 +367,7 @@ Resources:
     Properties:
       AlarmActions:
         - !Ref LambdaAlarmTopic
-      AlarmDescription: Messages arrived in masutaka-feed-hatebu-dlq.fifo
+      AlarmDescription: Messages arrived in hatebu-dlq.fifo
       AlarmName: hatebu-dead-letter-queue-messages
       ComparisonOperator: GreaterThanThreshold
       DatapointsToAlarm: 1
@@ -386,7 +386,7 @@ Resources:
   FeedDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: masutaka-feed
+      DashboardName: app
       DashboardBody: !Sub |
         {
           "start": "-P3M",
@@ -556,5 +556,5 @@ Resources:
   LambdaAlarmTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: masutaka-feed-lambda-alarms
+      TopicName: lambda-alarms
       DisplayName: Masutaka Feed Lambda Alarm Notifications

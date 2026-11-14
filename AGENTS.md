@@ -48,14 +48,14 @@ MessageGroupIdをキューごとに固定して全体の順序を保つため、
 
 ### DynamoDBテーブル
 
-- `masutaka-feed-github-state`: GitHub処理済みエントリーを管理（TTL: 30日）
-- `masutaka-feed-hatebu-state`: はてブ処理済みエントリーを管理（TTL: 30日）
+- `github-state`: GitHub処理済みエントリーを管理（TTL: 30日）
+- `hatebu-state`: はてブ処理済みエントリーを管理（TTL: 30日）
 
 ### CloudWatchアラーム
 
 Subscriber関数のエラーと、DLQへのメッセージの到着を監視する：
 
-- 通知先: masutaka-feed-lambda-alarms SNSトピック
+- 通知先: lambda-alarms SNSトピック
 - Subscriber関数の閾値:
   - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
   - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）

@@ -1,7 +1,7 @@
 AWS := aws
 MAKE := make
 SAM := sam
-STACK_NAME := masutaka-feed
+STACK_NAME := app
 
 .PHONY: setup
 setup:
