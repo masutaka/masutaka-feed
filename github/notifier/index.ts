@@ -1,6 +1,6 @@
 import { createRestAPIClient } from 'masto';
 import { Context, SQSEvent } from 'aws-lambda';
-import { Pushover } from './pushover';
+import { sendPushoverMessage } from './pushover';
 
 // github/subscriber/index.ts の QueueMessage と合わせること
 interface QueueMessage {
@@ -19,11 +19,6 @@ const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 const mastodonClient = createRestAPIClient({
   url: MASTODON_URL,
   accessToken: MASTODON_ACCESS_TOKEN,
-});
-
-const pushoverClient = new Pushover({
-  user: PUSHOVER_USER_KEY,
-  token: PUSHOVER_APP_TOKEN,
 });
 
 // BatchSize を 1 にしているので、Records は 1 件だけ届く。
@@ -100,7 +95,10 @@ const sendPushover = async (title: string, message: string): Promise<any> => {
   }
 
   try {
-    return await pushoverClient.send({
+    return await sendPushoverMessage({
+      user: PUSHOVER_USER_KEY,
+      token: PUSHOVER_APP_TOKEN,
+    }, {
       title,
       message, // required
       device: 'Android',

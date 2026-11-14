@@ -37,7 +37,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 - `HatebuFeedSubscriberFunction`: はてブフィード購読とDynamoDBでの重複チェック、新着エントリーを古い順にSQSへ送信（タイムアウト: 60秒）
 
 #### Notifier関数
-- `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 60秒）
+- `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -170,7 +170,6 @@ make deploy-bootstrap
 
 ### プロダクション依存関係
 - `masto`: Mastodon API クライアント（github/notifier、hatebu/notifierで使用）
-- `pushover-notifications`: github/notifierでのみ使用
 - `rss-parser`: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-sqs`: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
