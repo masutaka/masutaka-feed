@@ -42,9 +42,6 @@ updates:
       masto:
         patterns:
           - "masto"
-      pushover:
-        patterns:
-          - "pushover-notifications"
       rss-parser:
         patterns:
           - "rss-parser"

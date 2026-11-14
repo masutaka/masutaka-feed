@@ -169,7 +169,7 @@ Resources:
     Properties:
       QueueName: github.fifo
       FifoQueue: true
-      VisibilityTimeout: 360 # seconds. AWS recommends at least 6 times the notifier timeout
+      VisibilityTimeout: 450 # seconds. AWS recommends at least 6 times the notifier timeout
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt GitHubDeadLetterQueue.Arn
         maxReceiveCount: 5
@@ -238,6 +238,8 @@ Resources:
           - index.ts
     Properties:
       CodeUri: github/notifier/
+      # Globals の60秒のままにしないのは、Pushover を最大10秒待つ分だけ Mastodon の投稿に使える時間が減るため
+      Timeout: 75 # seconds
       Events:
         GitHubQueueEvent:
           Type: SQS
