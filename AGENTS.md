@@ -91,7 +91,18 @@ make build
 
 # SAMデプロイ（先に make build が必要）
 make deploy
+
+# GitHub Actionsのデプロイ用IAMロールとOIDCプロバイダーのデプロイ（ローカルから手動で実行）
+make deploy-bootstrap
 ```
+
+### bootstrapスタック
+
+`bootstrap.yaml` は、GitHub Actionsのデプロイ用IAMロール（`github-actions`）とOIDCプロバイダーを定義する。
+
+- デプロイ用ロールは、そのロール自身ではデプロイできないため、`template.yaml` とは別スタック（`bootstrap`）にしている
+- GitHub Actionsのデプロイでは更新しない。変更したら、管理者権限で `make deploy-bootstrap` を実行する
+- ただしロールは `AdministratorAccess` を持つため、ロールが自分の権限を書き換えること自体は防げない
 
 ### 個別の依存関係管理
 

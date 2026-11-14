@@ -1,6 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-# GitHub Actions のデプロイ用 role は、その role 自身ではデプロイできないため、template.yaml とは別スタックにする。
-# role が自分の権限を書き換えられないよう、GitHub Actions からは更新せず、`make deploy-bootstrap` で手動デプロイする。
 Description: OIDC provider and IAM role for deploying masutaka-feed from GitHub Actions
 
 Resources:
