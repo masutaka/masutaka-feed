@@ -48,14 +48,14 @@ MessageGroupIdをキューごとに固定して全体の順序を保つため、
 
 ### DynamoDBテーブル
 
-- `masutaka-feed-github-state`: GitHub処理済みエントリーを管理（TTL: 30日）
-- `masutaka-feed-hatebu-state`: はてブ処理済みエントリーを管理（TTL: 30日）
+- `github-state`: GitHub処理済みエントリーを管理（TTL: 30日）
+- `hatebu-state`: はてブ処理済みエントリーを管理（TTL: 30日）
 
 ### CloudWatchアラーム
 
 Subscriber関数のエラーと、DLQへのメッセージの到着を監視する：
 
-- 通知先: masutaka-feed-lambda-alarms SNSトピック
+- 通知先: lambda-alarms SNSトピック
 - Subscriber関数の閾値:
   - GitHubFeedSubscriber: 6回連続でエラー発生（5分間隔で評価 = 約30分）
   - HatebuFeedSubscriber: 3回連続でエラー発生（15分間隔で評価 = 約45分）
@@ -91,7 +91,18 @@ make build
 
 # SAMデプロイ（先に make build が必要）
 make deploy
+
+# GitHub Actionsのデプロイ用IAMロールとOIDCプロバイダーのデプロイ（ローカルから手動で実行）
+make deploy-bootstrap
 ```
+
+### bootstrapスタック
+
+`bootstrap.yaml` は、GitHub Actionsのデプロイ用IAMロール（`github-actions`）とOIDCプロバイダーを定義する。
+
+- デプロイ用ロールは、そのロール自身ではデプロイできないため、`template.yaml` とは別スタック（`bootstrap`）にしている
+- GitHub Actionsのデプロイでは更新しない。変更したら、管理者権限で `make deploy-bootstrap` を実行する
+- ただしロールは `AdministratorAccess` を持つため、ロールが自分の権限を書き換えること自体は防げない
 
 ### 個別の依存関係管理
 

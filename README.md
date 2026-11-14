@@ -63,3 +63,9 @@ graph TD
     A -.->|2: 取得| H
     D -->|6: 投稿| E
 ```
+
+## デプロイ
+
+main にマージすると、GitHub Actions が `make deploy` で `app` スタックをデプロイする。
+
+GitHub Actions のデプロイ用 IAM role と OIDC provider は、`bootstrap.yaml` の `bootstrap` スタックで管理する。GitHub Actions のデプロイでは更新しないため、変更したらローカルから管理者権限で `make deploy-bootstrap` を実行する。

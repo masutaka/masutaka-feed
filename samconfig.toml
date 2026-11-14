@@ -6,9 +6,9 @@ region = "ap-northeast-1"
 
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "masutaka-feed"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-494o19nbkn1d"
-s3_prefix = "masutaka-feed"
+stack_name = "app"
+resolve_s3 = true
+s3_prefix = "app"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "GitHubFeedUrl=\"\" GithubTitleIgnoreRegexp=\"\" GithubUrlIgnoreRegexp=\"\" GithubTitlePushoverRegexp=\"\" HatebuFeedUrl=\"\" PushoverAppToken=\"\" PushoverUserKey=\"\" MastodonUrl=\"\" MastodonAccessToken=\"\""

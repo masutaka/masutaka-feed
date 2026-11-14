@@ -1,7 +1,7 @@
 AWS := aws
 MAKE := make
 SAM := sam
-STACK_NAME := masutaka-feed
+STACK_NAME := app
 
 .PHONY: setup
 setup:
@@ -88,6 +88,10 @@ deploy: validate-envs .aws-sam/build/template.yaml
 		PushoverUserKey="$$PUSHOVER_USER_KEY" \
 		MastodonUrl="$$MASTODON_URL" \
 		MastodonAccessToken="$$MASTODON_ACCESS_TOKEN"
+
+.PHONY: deploy-bootstrap
+deploy-bootstrap:
+	@$(AWS) cloudformation deploy --template-file bootstrap.yaml --stack-name bootstrap --capabilities CAPABILITY_NAMED_IAM --region ap-northeast-1
 
 # .PHONY: destroy
 # destroy:

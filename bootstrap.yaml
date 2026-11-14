@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: OIDC provider and IAM role for deploying masutaka-feed from GitHub Actions
+
+Resources:
+  # https://docs.github.com/ja/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
+  # https://github.com/aws-actions/configure-aws-credentials
+  GitHubActionsOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+
+  GitHubActionsDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: github-actions
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Ref GitHubActionsOIDCProvider
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:sub: repo:masutaka@170014/masutaka-feed@275051901:ref:refs/heads/main
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+      # SAM で IAM ロールや Lambda、DynamoDB、EventBridge Scheduler など多種のリソースを作るため Admin 権限が必要
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  GitHubActionsDeployRoleArn:
+    Description: Set this to the AWS_IAM_ROLE_ARN variable of the GitHub repository
+    Value: !GetAtt GitHubActionsDeployRole.Arn
