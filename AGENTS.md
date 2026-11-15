@@ -91,7 +91,7 @@ DLQのアラームは、DLQにメッセージが残っている間はALARMのま
 
 `MonthlyCostBudget` は、アカウント全体の月の費用が $1 を超えたとき（実績と予測）に lambda-alarms SNS トピックへ通知する。専用の AWS アカウントのため、アカウント全体を対象にしている。
 
-lambda-alarms のトピックポリシー（`LambdaAlarmTopicPolicy`）は既定のポリシーを置き換えるため、CloudWatch アラームと Budgets の両方に publish を許可している。片方を消すと、その通知が届かなくなる。
+lambda-alarms のトピックポリシー（`LambdaAlarmTopicPolicy`）はデフォルトのポリシーを置き換えるため、CloudWatch アラームと Budgets の両方に publish を許可している。片方を消すと、その通知が届かなくなる。
 
 ## 主要コマンド
 
