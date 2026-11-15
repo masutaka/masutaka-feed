@@ -608,7 +608,9 @@ Resources:
     Properties:
       TopicName: lambda-alarms
       DisplayName: Masutaka Feed Lambda Alarm Notifications
-  # MonthlyCostBudget から lambda-alarms トピックへ publish できるようにする。通知はアラームと同じく、トピックのメール購読に届く
+  # CloudWatch アラームと MonthlyCostBudget から lambda-alarms トピックへ publish できるようにする。通知はトピックのメール購読に届く
+  # トピックポリシーは既定のポリシーを置き換えるため、CloudWatch の許可も書く必要がある
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Notify_Users_Alarm_Changes.html
   # https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-sns-policy.html
   LambdaAlarmTopicPolicy:
     Type: AWS::SNS::TopicPolicy
@@ -618,6 +620,18 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
+          - Sid: AWSCloudWatchSNSPublishingPermissions
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref LambdaAlarmTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                # CloudWatch の公式の例に沿って、アカウントのアラームをまとめて許可する
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*"
           - Sid: AWSBudgetsSNSPublishingPermissions
             Effect: Allow
             Principal:
