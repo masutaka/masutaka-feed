@@ -20,7 +20,9 @@ const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 // README（5秒）・Bedrock（15秒）・Mastodon（20秒）・Pushover（10秒）の合計を、Lambda の Timeout（75秒）に余裕をもって収める
 const MASTODON_TIMEOUT_MS = 20_000;
 
-// Mastodon は URL を長さによらず23文字と数える
+// Mastodon は本文の URL を長さによらず23文字と数える（インスタンスの configuration.statuses.characters_reserved_per_url）
+// https://docs.joinmastodon.org/entities/Instance/#characters_reserved_per_url
+// https://github.com/mastodon/mastodon/blob/v4.7.5/app/validators/status_length_validator.rb#L4-L5
 const MASTODON_MAX_LENGTH = 500;
 const MASTODON_URL_LENGTH = 23;
 

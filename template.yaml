@@ -608,7 +608,7 @@ Resources:
     Properties:
       TopicName: lambda-alarms
       DisplayName: Masutaka Feed Lambda Alarm Notifications
-  # MonthlyCostBudget の通知を受け取るため
+  # MonthlyCostBudget から lambda-alarms トピックへ publish できるようにする。通知はアラームと同じく、トピックのメール購読に届く
   # https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-sns-policy.html
   LambdaAlarmTopicPolicy:
     Type: AWS::SNS::TopicPolicy

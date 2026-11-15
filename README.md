@@ -16,6 +16,7 @@
 graph TD
     subgraph "データソース"
         A[/GitHub のプライベートフィード/]
+        R[/GitHub/]
     end
 
     subgraph "AWS"
@@ -25,12 +26,11 @@ graph TD
         H -->|4: 新着があれば<br/>送信| Q[[SQS FIFO キュー]]
         Q -->|5: 起動| D[Notifier Lambda]
         Q -.->|失敗が続いたら| X[[デッドレターキュー]]
+        B[Amazon Bedrock<br/>Claude Haiku]
     end
 
     E[Mastodon]
     F[Pushover]
-    R[/raw.githubusercontent.com/]
-    B[Amazon Bedrock<br/>Claude Haiku]
 
     A -.->|2: 取得| H
     D -.->|6: スターのイベントなら<br/>README を取得| R
