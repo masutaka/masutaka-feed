@@ -38,6 +38,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### Notifier関数
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
+  - スターのイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -63,6 +64,21 @@ Subscriber関数のエラーと、DLQへのメッセージの到着を監視す�
 外部フィードの一時的な5xxなど、次回実行で自然復旧する単発の失敗を通知しない設計。
 
 Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試行で復旧し、失敗し続けたメッセージはDLQに移ってDLQのアラームで通知されるため。
+
+### スターしたリポジトリの紹介文
+
+`GitHubNotifierFunction` は、スターのイベントのときだけ次のように紹介文を作る。
+
+- README は `https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.md` から未認証で取得する。owner/repo はタイトルではなく URL から取り出す
+- README は 16 KiB で読み取りをやめ、資料として `<readme>` タグで区切って渡す。第三者が書けるため、プロンプトインジェクションを前提にする
+- モデルは `global.anthropic.claude-haiku-5-5`（Global cross-Region inference）。`template.yaml` の `Mappings` で定義し、IAM では必要な3つの ARN だけを許可する
+- README・Bedrock・Mastodon・Pushover の呼び出しにタイムアウトを設け、Lambda の Timeout（75秒）に収める。Lambda 全体がタイムアウトすると、紹介なしで投稿するフォールバックが働かないため
+- 投稿の形は `[GH] {紹介文} > {タイトル} {URL}`。紹介なしのときは、ほかのイベントと同じ `[GH] {タイトル} {URL}`
+- 次の場合は紹介なしで投稿し、理由をログに出す
+  - `README.md` がない、README の取得に失敗した、Bedrock の呼び出しに失敗した
+  - 生成文が空・120字を超える・途中で途切れた、またはメンション・`https?://` の URL・ハッシュタグ・改行・制御文字を含む
+  - 紹介文を足すと Mastodon の500文字制限（URL は23字換算）を超える
+- Pushover への送信内容は変えない
 
 ### 予算アラーム
 
@@ -136,7 +152,7 @@ make deploy-bootstrap
   - Lambda関数（Feed Subscriber、Notifier）の設定
   - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
-  - 予算アラーム（MonthlyCostBudget）の定義
+  - Bedrock のモデル（`Mappings`）と予算アラーム（MonthlyCostBudget）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
 - ビルドプロセス: esbuildを使用したTypeScriptのトランスパイル
@@ -178,6 +194,7 @@ make deploy-bootstrap
 - `rss-parser`: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-sqs`: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
+- `@aws-sdk/client-bedrock-runtime`: Amazon Bedrock の呼び出し（github/notifierで使用）
 
 ### 開発依存関係
 - TypeScript: 型システム

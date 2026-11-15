@@ -7,6 +7,7 @@
   "author": "Takashi Masuda",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1164.0",
     "esbuild": "0.28.2",
     "masto": "8.0.0"
   },

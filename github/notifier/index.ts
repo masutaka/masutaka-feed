@@ -1,6 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context, SQSEvent } from 'aws-lambda';
 import { sendPushoverMessage } from './pushover';
+import { generateIntroduction, isStarEvent, parseRepositoryUrl } from './introduction';
 
 // github/subscriber/index.ts の QueueMessage と合わせること
 interface QueueMessage {
@@ -16,9 +17,17 @@ const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
+// README（5秒）・Bedrock（15秒）・Mastodon（20秒）・Pushover（10秒）の合計を、Lambda の Timeout（75秒）に余裕をもって収める
+const MASTODON_TIMEOUT_MS = 20_000;
+
+// Mastodon は URL を長さによらず23文字と数える
+const MASTODON_MAX_LENGTH = 500;
+const MASTODON_URL_LENGTH = 23;
+
 const mastodonClient = createRestAPIClient({
   url: MASTODON_URL,
   accessToken: MASTODON_ACCESS_TOKEN,
+  timeout: MASTODON_TIMEOUT_MS,
 });
 
 // BatchSize を 1 にしているので、Records は 1 件だけ届く。
@@ -64,8 +73,9 @@ const processEntry = async (title: string, url: string): Promise<void> => {
   }
 
   const message = buildMessage(title, url);
+  const status = await buildMastodonStatus(title, url, message);
 
-  const mastodonResponse = await postToMastodon(`[GH] ${title} ${message}`);
+  const mastodonResponse = await postToMastodon(status);
   console.info('Successfully posted to Mastodon:', mastodonResponse);
 
   // Pushover は best effort（失敗してもエントリーは処理済みとする）
@@ -109,6 +119,37 @@ const sendPushover = async (title: string, message: string): Promise<any> => {
     console.error('Failed to send to Pushover:', error);
     throw error;
   }
+};
+
+// スターのイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
+const buildMastodonStatus = async (title: string, url: string, message: string): Promise<string> => {
+  const status = `[GH] ${title} ${message}`;
+
+  if (!isStarEvent(title)) {
+    return status;
+  }
+
+  const repository = parseRepositoryUrl(url);
+  if (!repository) {
+    console.warn(`Posting without introduction (unexpected repository URL): ${url}`);
+    return status;
+  }
+
+  const result = await generateIntroduction(repository);
+  if (!result.ok) {
+    console.warn(`Posting without introduction (${result.reason}):`, result.detail);
+    return status;
+  }
+
+  const statusWithIntroduction = `[GH] ${result.introduction} > ${title} ${message}`;
+  const length = [...statusWithIntroduction.replace(message, 'x'.repeat(MASTODON_URL_LENGTH))].length;
+  if (length > MASTODON_MAX_LENGTH) {
+    console.warn(`Posting without introduction (too long: ${length} characters):`, result.introduction);
+    return status;
+  }
+
+  console.info('Posting with introduction:', result.introduction);
+  return statusWithIntroduction;
 };
 
 const buildMessage = (title: string, url: string): string => {
