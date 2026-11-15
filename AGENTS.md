@@ -64,6 +64,10 @@ Subscriber関数のエラーと、DLQへのメッセージの到着を監視す�
 
 Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試行で復旧し、失敗し続けたメッセージはDLQに移ってDLQのアラームで通知されるため。
 
+### 予算アラーム
+
+`MonthlyCostBudget` は、アカウント全体の月の費用が $1 を超えたとき（実績と予測）に lambda-alarms SNS トピックへ通知する。専用の AWS アカウントのため、アカウント全体を対象にしている。
+
 DLQのアラームは、DLQにメッセージが残っている間はALARMのままなので、次にDLQに移ったメッセージは通知されない。通知を受けたら、DLQのメッセージを元のキューに戻すか削除して、DLQを空にする。元のキューに戻したメッセージはキューの末尾に入るため、投稿は古い順にならない。
 
 ## 主要コマンド
@@ -132,6 +136,7 @@ make deploy-bootstrap
   - Lambda関数（Feed Subscriber、Notifier）の設定
   - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
+  - 予算アラーム（MonthlyCostBudget）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
 - ビルドプロセス: esbuildを使用したTypeScriptのトランスパイル

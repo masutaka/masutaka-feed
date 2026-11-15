@@ -560,3 +560,56 @@ Resources:
     Properties:
       TopicName: lambda-alarms
       DisplayName: Masutaka Feed Lambda Alarm Notifications
+  # MonthlyCostBudget の通知を受け取るため
+  # https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-sns-policy.html
+  LambdaAlarmTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref LambdaAlarmTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AWSBudgetsSNSPublishingPermissions
+            Effect: Allow
+            Principal:
+              Service: budgets.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref LambdaAlarmTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:budgets::${AWS::AccountId}:*"
+
+  # Budget
+  # Bedrock の費用が想定を超えたら気づけるようにする。専用の AWS アカウントのため、アカウント全体の費用を対象にする
+  MonthlyCostBudget:
+    Type: AWS::Budgets::Budget
+    # SNS トピックへの publish が許可される前に作ると、Invalid SNS topic で失敗するため
+    DependsOn: LambdaAlarmTopicPolicy
+    Properties:
+      Budget:
+        BudgetName: monthly-cost
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 1
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100 # percent
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Ref LambdaAlarmTopic
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100 # percent
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Ref LambdaAlarmTopic
