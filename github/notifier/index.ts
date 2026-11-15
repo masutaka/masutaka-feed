@@ -1,7 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context, SQSEvent } from 'aws-lambda';
 import { sendPushoverMessage } from './pushover';
-import { generateIntroduction, isStarEvent, parseRepositoryUrl } from './introduction';
+import { IntroductionResult, generateIntroduction, isStarEvent, parseRepositoryUrl } from './introduction';
 
 // github/subscriber/index.ts の QueueMessage と合わせること
 interface QueueMessage {
@@ -137,12 +137,20 @@ const buildMastodonStatus = async (title: string, url: string, message: string):
     return status;
   }
 
-  const result = await generateIntroduction(repository);
+  let result: IntroductionResult;
+  try {
+    result = await generateIntroduction(repository);
+  } catch (error) {
+    // 応答の形が想定と違うなど、generateIntroduction で拾えなかった例外でも紹介なしで投稿する
+    console.warn('Posting without introduction (unexpected-error):', error);
+    return status;
+  }
   if (!result.ok) {
     console.warn(`Posting without introduction (${result.reason}):`, result.detail);
     return status;
   }
 
+  // GitHub の名前の上限を前提にすると、最大でも約340字で収まる。タイトルはフィード次第なので、確認は残す
   const statusWithIntroduction = `[GH] ${result.introduction} > ${title} ${message}`;
   const length = [...statusWithIntroduction.replace(message, 'x'.repeat(MASTODON_URL_LENGTH))].length;
   if (length > MASTODON_MAX_LENGTH) {
