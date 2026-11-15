@@ -44,11 +44,21 @@ const buildSystemPrompt = (tag: string): string => `GitHub リポジトリの紹
 // owner は英数字とハイフン、リポジトリ名は英数字と「.」「_」「-」だけを許す
 const REPOSITORY_URL_REGEXP = /^https:\/\/github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})$/;
 
-// Mastodon でリンク・メンション・ハッシュタグになる文字列と、改行・制御文字・不可視の書式文字。
-// リンクになるスキームは Mastodon v4.7.5 の config/initializers/twitter_regex.rb に合わせる
-// https://github.com/mastodon/mastodon/blob/v4.7.5/config/initializers/twitter_regex.rb#L45
-const FORBIDDEN_OUTPUT_REGEXP =
-  /(?:https?|dat|dweb|ipfs|ipns|ssb|gopher|gemini):\/\/|xmpp:|magnet:|[@＠#＃]|[\p{Cc}\p{Cf}\u2028\u2029]/iu;
+// 生成文に含まれていたら紹介なしにする文字列。いずれも Mastodon v4.7.5 の判定に合わせている
+// - リンクになる URL（config/initializers/twitter_regex.rb）
+//   https://github.com/mastodon/mastodon/blob/v4.7.5/config/initializers/twitter_regex.rb#L45
+// - メンション・ハッシュタグになる文字
+// - カスタム絵文字になる :shortcode:（app/models/custom_emoji.rb の SCAN_RE）
+//   https://github.com/mastodon/mastodon/blob/v4.7.5/app/models/custom_emoji.rb#L32-L36
+// - 投稿の区切りの「>」を偽装できる不等号
+// - 改行・制御文字・不可視の書式文字
+const FORBIDDEN_OUTPUT_REGEXP = new RegExp([
+  /(?:https?|dat|dweb|ipfs|ipns|ssb|gopher|gemini):\/\/|xmpp:|magnet:/u.source,
+  /[@＠#＃]/u.source,
+  /(?<![\p{L}\p{N}:]):[A-Za-z0-9_]{2,}:(?![\p{L}\p{N}:])/u.source,
+  /[<>＜＞]/u.source,
+  /[\p{Cc}\p{Cf}\u2028\u2029]/u.source,
+].join('|'), 'iu');
 
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
@@ -89,7 +99,7 @@ export const generateIntroduction = async (repository: Repository): Promise<Intr
   return { ok: true, introduction };
 };
 
-// README.md がなければ undefined を返す
+// README.md がないか、HTML コメントを除くと中身がなければ undefined を返す
 const fetchReadme = async (repository: Repository): Promise<string | undefined> => {
   const url = `https://raw.githubusercontent.com/${repository.owner}/${repository.name}/HEAD/README.md`;
   const response = await fetch(url, { signal: AbortSignal.timeout(README_TIMEOUT_MS) });
@@ -101,7 +111,31 @@ const fetchReadme = async (repository: Repository): Promise<string | undefined> 
     throw new Error(`README fetch error: HTTP ${response.status}`);
   }
 
-  return await readLimitedText(response.body, README_MAX_BYTES);
+  // 上限で切ってから取り除くことで、切れ目で途切れたコメントも閉じなしとして捨てる
+  const readme = removeHtmlComments(await readLimitedText(response.body, README_MAX_BYTES));
+  return readme.trim() === '' ? undefined : readme;
+};
+
+// GitHub の表示では見えない指示を手軽に仕込めないよう、HTML コメントを取り除く。
+// 正規表現は閉じのないコメントが多いと2乗の時間がかかるため、indexOf で線形に走査する。
+// 閉じのないコメントは CommonMark と同じく文書の終わりまで続くとみなし、そこから後ろを捨てる
+const removeHtmlComments = (text: string): string => {
+  let result = '';
+  let position = 0;
+
+  for (;;) {
+    const start = text.indexOf('<!--', position);
+    if (start === -1) {
+      return result + text.slice(position);
+    }
+    result += text.slice(position, start);
+
+    const end = text.indexOf('-->', start + 4);
+    if (end === -1) {
+      return result;
+    }
+    position = end + 3;
+  }
 };
 
 // 上限のバイト数に達したら読み取りをやめる。途中で切れたマルチバイト文字は置換文字になる
