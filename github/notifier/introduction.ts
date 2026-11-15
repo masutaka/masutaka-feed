@@ -45,7 +45,8 @@ const FORBIDDEN_OUTPUT_REGEXP = /https?:\/\/|[@＠#＃]|[\p{Cc}\p{Cf}\u2028\u202
 
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
-export const isStarEvent = (title: string): boolean => / starred [^ ]+\/[^ ]+$/.test(title);
+// 「/」を区切りの前後で取り合わないようにして、長い文字列でも線形時間で判定する
+export const isStarEvent = (title: string): boolean => /^[^ ]+ starred [^ /]+\/[^ /]+$/.test(title);
 
 export const parseRepositoryUrl = (url: string): Repository | undefined => {
   const found = url.match(REPOSITORY_URL_REGEXP);
