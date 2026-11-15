@@ -17,8 +17,9 @@ const MASTODON_ACCESS_TOKEN = process.env.MASTODON_ACCESS_TOKEN!;
 const PUSHOVER_USER_KEY = process.env.PUSHOVER_USER_KEY!;
 const PUSHOVER_APP_TOKEN = process.env.PUSHOVER_APP_TOKEN!;
 
-// README（5秒）・Bedrock（15秒）・Mastodon（20秒）・Pushover（10秒）の合計を、Lambda の Timeout（75秒）に余裕をもって収める
-const MASTODON_TIMEOUT_MS = 20_000;
+// README（5秒）・Bedrock（15秒）・Mastodon（35秒）・Pushover（10秒）の合計65秒を、Lambda の Timeout（75秒）に収める。
+// Mastodon には残りの時間を回す。投稿は済んだのに応答が遅れてタイムアウトすると、SQS の再試行で二重に投稿されるため
+const MASTODON_TIMEOUT_MS = 35_000;
 
 // Mastodon は本文の URL を長さによらず23文字と数える（インスタンスの configuration.statuses.characters_reserved_per_url）
 // https://docs.joinmastodon.org/entities/Instance/#characters_reserved_per_url
