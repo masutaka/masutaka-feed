@@ -41,9 +41,10 @@ Parameters:
 Mappings:
   Bedrock:
     # GitHubNotifierFunction でスターしたリポジトリの紹介文を作るモデル
-    # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-5-5.html
+    # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html
+    # Claude Haiku 5.5 はこのアカウントではまだ使えない（not available for this account）ため、使えるようになるまで Haiku 4.5 にする
     GitHubNotifier:
-      ModelId: anthropic.claude-haiku-5-5
+      ModelId: anthropic.claude-haiku-4-5-20251001-v1:0
 
 # More info about Globals: https://github.com/aws/serverless-application-model/blob/master/docs/globals.rst
 Globals:

@@ -76,7 +76,7 @@ DLQのアラームは、DLQにメッセージが残っている間はALARMのま
 - README は第三者が書けるため、プロンプトインジェクションを前提にする
   - GitHub の表示では見えない指示を手軽に仕込めないよう、HTML コメントは取り除いてから渡す。ただし、表示されない書き方はほかにもある
   - 出力の検証で防げるのは、リンク・メンション・ハッシュタグなどの形式まで。README に書かれた指示にモデルが従えば、誤解を招く文が投稿されることはありうる
-- モデルは `global.anthropic.claude-haiku-5-5`（Global cross-Region inference）。`template.yaml` の `Mappings` で定義し、IAM では必要な3つの ARN だけを許可する
+- モデルは `global.anthropic.claude-haiku-4-5-20251001-v1:0`（Global cross-Region inference）。Claude Haiku 5.5 がこのアカウントではまだ使えないための代わりで、使えるようになったら Claude Haiku 5.5 にする（#295）。`template.yaml` の `Mappings` で定義し、IAM では必要な3つの ARN だけを許可する
 - README・Bedrock・Mastodon・Pushover の呼び出しにタイムアウトを設け、Lambda の Timeout（75秒）に収める。Lambda 全体がタイムアウトすると、紹介なしで投稿するフォールバックが働かないため
 - 投稿の形は `[GH] {紹介文} > {タイトル} {URL}`。紹介なしのときは、ほかのイベントと同じ `[GH] {タイトル} {URL}`
 - 次の場合は紹介なしで投稿し、理由をログに出す

@@ -19,8 +19,8 @@ export type IntroductionResult =
 const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID!;
 
 // 費用の参考値（Claude API の単価を仮定。Bedrock の単価は確かめていない）
-// - 1試行は「入力トークン × $0.10/MTok + 出力トークン × $0.50/MTok」。README の 16 KiB を概算で約1万トークンとすると $0.0011
-// - DLQ からの再投入などを除き、SQS の受信5回 × SDK の BEDROCK_MAX_ATTEMPTS 回で、1件あたり10試行（約 $0.011）と見積もる
+// - 1試行は「入力トークン × $1/MTok + 出力トークン × $5/MTok」（Claude Haiku 4.5）。README の 16 KiB を概算で約1万トークンとすると $0.011
+// - DLQ からの再投入などを除き、SQS の受信5回 × SDK の BEDROCK_MAX_ATTEMPTS 回で、1件あたり最大10試行（約 $0.11）と見積もる
 const README_MAX_BYTES = 16 * 1024;
 const BEDROCK_MAX_TOKENS = 200;
 const BEDROCK_MAX_ATTEMPTS = 2;
