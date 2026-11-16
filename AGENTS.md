@@ -38,6 +38,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### Notifier関数
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
+  - スターのイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -65,6 +66,32 @@ Subscriber関数のエラーと、DLQへのメッセージの到着を監視す�
 Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試行で復旧し、失敗し続けたメッセージはDLQに移ってDLQのアラームで通知されるため。
 
 DLQのアラームは、DLQにメッセージが残っている間はALARMのままなので、次にDLQに移ったメッセージは通知されない。通知を受けたら、DLQのメッセージを元のキューに戻すか削除して、DLQを空にする。元のキューに戻したメッセージはキューの末尾に入るため、投稿は古い順にならない。
+
+### スターしたリポジトリの紹介文
+
+`GitHubNotifierFunction` は、スターのイベントのときだけ次のように紹介文を作る。
+
+- README は `https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.md` から未認証で取得する。owner/repo はタイトルではなく URL から取り出す
+- README は 16 KiB で読み取りをやめ、資料として区切って渡す。区切りのタグ名には呼び出しごとのランダムな値を入れ、README 側から閉じられないようにする
+- README は第三者が書けるため、プロンプトインジェクションを前提にする
+  - GitHub の表示では見えない指示を手軽に仕込めないよう、HTML コメントは取り除いてから渡す。ただし、表示されない書き方はほかにもある
+  - 出力の検証で防げるのは、リンク・メンション・ハッシュタグなどの形式まで。README に書かれた指示にモデルが従えば、誤解を招く文が投稿されることはありうる
+- モデルは `global.anthropic.claude-haiku-4-5-20251001-v1:0`（Global cross-Region inference）。Claude Haiku 5.5 がこのアカウントではまだ使えないための代わりで、使えるようになったら Claude Haiku 5.5 にする（#295）。`template.yaml` の `Mappings` で定義し、IAM では必要な3つの ARN だけを許可する
+- README・Bedrock・Mastodon・Pushover の呼び出しにタイムアウトを設け、Lambda の Timeout（75秒）に収める。Lambda 全体がタイムアウトすると、紹介なしで投稿するフォールバックが働かないため
+- 投稿の形は `[GH] {紹介文} > {タイトル} {URL}`。紹介なしのときは、ほかのイベントと同じ `[GH] {タイトル} {URL}`
+- 次の場合は紹介なしで投稿し、理由をログに出す
+  - `README.md` がない（HTML コメントを除くと空の場合も含む）、README の取得に失敗した、Bedrock の呼び出しに失敗した
+  - 前後の空白を除いた生成文が空・120字を超える・途中で途切れた、またはメンション・Mastodon でリンクになる URL・ハッシュタグ・カスタム絵文字・不等号（`<` `>`）・改行・制御文字を含む
+  - 想定外の例外が出た
+  - 紹介文を足すと Mastodon の500文字制限（URL は23字換算）を超える
+- Pushover への送信内容は変えない
+- 紹介文を作れない状態（Bedrock の失敗など）が続いても、自動では通知しない。趣味の機能で、紹介なしで投稿されるだけのため。最初の紹介付きの投稿は、デプロイ後にログで確かめる
+
+### 予算アラーム
+
+`MonthlyCostBudget` は、アカウント全体の月の費用が $10 を超えたとき（実績と予測）に lambda-alarms SNS トピックへ通知する。専用の AWS アカウントのため、アカウント全体を対象にしている。
+
+lambda-alarms のトピックポリシー（`LambdaAlarmTopicPolicy`）はデフォルトのポリシーを置き換えるため、CloudWatch アラームと Budgets の両方に publish を許可している。片方を消すと、その通知が届かなくなる。
 
 ## 主要コマンド
 
@@ -132,6 +159,7 @@ make deploy-bootstrap
   - Lambda関数（Feed Subscriber、Notifier）の設定
   - SQS FIFOキュー（GitHubQueue、HatebuQueue）とDLQの定義
   - DynamoDBテーブル（GitHubStateTable、HatebuStateTable）の定義
+  - Bedrock のモデル（`Mappings`）と予算アラーム（MonthlyCostBudget）の定義
   - EventBridge Schedulerの設定（5分/15分間隔）
   - IAMロールとポリシーの自動生成
 - ビルドプロセス: esbuildを使用したTypeScriptのトランスパイル
@@ -173,6 +201,7 @@ make deploy-bootstrap
 - `rss-parser`: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-sqs`: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
+- `@aws-sdk/client-bedrock-runtime`: Amazon Bedrock の呼び出し（github/notifierで使用）
 
 ### 開発依存関係
 - TypeScript: 型システム

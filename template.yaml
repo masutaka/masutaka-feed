@@ -38,6 +38,14 @@ Parameters:
     Description: "Mastodon API access token"
     NoEcho: true
 
+Mappings:
+  Bedrock:
+    # GitHubNotifierFunction でスターしたリポジトリの紹介文を作るモデル
+    # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html
+    # Claude Haiku 5.5 はこのアカウントではまだ使えない（not available for this account）ため、使えるようになるまで Haiku 4.5 にする
+    GitHubNotifier:
+      ModelId: anthropic.claude-haiku-4-5-20251001-v1:0
+
 # More info about Globals: https://github.com/aws/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -239,6 +247,7 @@ Resources:
     Properties:
       CodeUri: github/notifier/
       # Globals の60秒のままにしないのは、Pushover を最大10秒待つ分だけ Mastodon の投稿に使える時間が減るため
+      # README の取得と Bedrock の呼び出しにも github/notifier/introduction.ts でタイムアウトを設けて、この時間に収めている
       Timeout: 75 # seconds
       Events:
         GitHubQueueEvent:
@@ -256,6 +265,46 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
+          BEDROCK_MODEL_ID: !Sub
+            - "global.${ModelId}"
+            - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+      # Global cross-Region inference に必要な3つの ARN だけを許可する
+      # https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html
+      Policies:
+        - Statement:
+            - Sid: GrantGlobalCrisInferenceProfileRegionAccess
+              Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource: !Sub
+                - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+              Condition:
+                StringEquals:
+                  aws:RequestedRegion: !Ref AWS::Region
+            - Sid: GrantGlobalCrisInferenceProfileInRegionModelAccess
+              Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource: !Sub
+                - "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"
+                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+              Condition:
+                StringEquals:
+                  aws:RequestedRegion: !Ref AWS::Region
+                  bedrock:InferenceProfileArn: !Sub
+                    - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+                    - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+            - Sid: GrantGlobalCrisInferenceProfileGlobalModelAccess
+              Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource: !Sub
+                - "arn:${AWS::Partition}:bedrock:::foundation-model/${ModelId}"
+                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+              Condition:
+                StringEquals:
+                  aws:RequestedRegion: unspecified
+                  bedrock:InferenceProfileArn: !Sub
+                    - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+                    - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
   HatebuNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -560,3 +609,70 @@ Resources:
     Properties:
       TopicName: lambda-alarms
       DisplayName: Masutaka Feed Lambda Alarm Notifications
+  # CloudWatch アラームと MonthlyCostBudget から lambda-alarms トピックへ publish できるようにする。通知はトピックのメール購読に届く
+  # トピックポリシーはデフォルトのポリシーを置き換えるため、CloudWatch の許可も書く必要がある
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Notify_Users_Alarm_Changes.html
+  # https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-sns-policy.html
+  LambdaAlarmTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref LambdaAlarmTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AWSCloudWatchSNSPublishingPermissions
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref LambdaAlarmTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                # CloudWatch の公式の例に沿って、アカウントのアラームをまとめて許可する
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*"
+          - Sid: AWSBudgetsSNSPublishingPermissions
+            Effect: Allow
+            Principal:
+              Service: budgets.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref LambdaAlarmTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:budgets::${AWS::AccountId}:*"
+
+  # Budget
+  # Bedrock の費用が想定を超えたら気づけるようにする。専用の AWS アカウントのため、アカウント全体の費用を対象にする
+  MonthlyCostBudget:
+    Type: AWS::Budgets::Budget
+    # SNS トピックへの publish が許可される前に作ると、Invalid SNS topic で失敗するため
+    DependsOn: LambdaAlarmTopicPolicy
+    Properties:
+      Budget:
+        BudgetName: monthly-cost
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 10
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100 # percent
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Ref LambdaAlarmTopic
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100 # percent
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: SNS
+              Address: !Ref LambdaAlarmTopic
