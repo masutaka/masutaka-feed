@@ -657,7 +657,7 @@ Resources:
         BudgetType: COST
         TimeUnit: MONTHLY
         BudgetLimit:
-          Amount: 1
+          Amount: 10
           Unit: USD
       NotificationsWithSubscribers:
         - Notification:
