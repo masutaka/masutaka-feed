@@ -5,6 +5,7 @@ import { IntroductionResult, generateIntroduction, isIntroductionTarget, parseRe
 
 // github/subscriber/index.ts の QueueMessage と合わせること
 interface QueueMessage {
+  entryId: string;
   entryTitle: string;
   entryUrl: string;
 }
@@ -48,7 +49,7 @@ export const handler = async (
 const notify = async (message: QueueMessage): Promise<void> => {
   console.info('Starting GitHub notifier with message:', message);
 
-  const { entryTitle, entryUrl } = message;
+  const { entryId, entryTitle, entryUrl } = message;
 
   // ワークアラウンド: 相対パスの場合は完全なURLに変換
   const processedUrl = entryUrl.startsWith('/')
@@ -59,10 +60,10 @@ const notify = async (message: QueueMessage): Promise<void> => {
     console.warn(`[Workaround] Converted relative path to full URL: ${processedUrl}`);
   }
 
-  return await processEntry(entryTitle, processedUrl);
+  return await processEntry(entryId, entryTitle, processedUrl);
 };
 
-const processEntry = async (title: string, url: string): Promise<void> => {
+const processEntry = async (entryId: string, title: string, url: string): Promise<void> => {
   console.info(`Processing entry for GitHub: ${url}`);
 
   if (ITEM_TITLE_IGNORE_REGEXP.test(title)) {
@@ -76,7 +77,7 @@ const processEntry = async (title: string, url: string): Promise<void> => {
   }
 
   const message = buildMessage(title, url);
-  const status = await buildMastodonStatus(title, url, message);
+  const status = await buildMastodonStatus(entryId, title, url, message);
 
   const mastodonResponse = await postToMastodon(status);
   console.info('Successfully posted to Mastodon:', mastodonResponse);
@@ -125,10 +126,10 @@ const sendPushover = async (title: string, message: string): Promise<any> => {
 };
 
 // スターと公開のイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
-const buildMastodonStatus = async (title: string, url: string, message: string): Promise<string> => {
+const buildMastodonStatus = async (entryId: string, title: string, url: string, message: string): Promise<string> => {
   const status = `[GH] ${title} ${message}`;
 
-  if (!isIntroductionTarget(title)) {
+  if (!isIntroductionTarget(entryId)) {
     return status;
   }
 

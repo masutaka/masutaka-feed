@@ -22,6 +22,7 @@ interface GitHubFeedItem {
 
 // github/notifier/index.ts の QueueMessage と合わせること
 interface QueueMessage {
+  entryId: string;
   entryTitle: string;
   entryUrl: string;
 }
@@ -91,6 +92,7 @@ const processNewEntry = async (
   console.info(`Processing new entry: ${entryId}`);
 
   const message: QueueMessage = {
+    entryId,
     entryTitle: item.title,
     entryUrl: item.link
   };
