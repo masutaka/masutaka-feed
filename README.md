@@ -45,7 +45,7 @@ graph TD
 > - Mastodon: `GH_TITLE_IGNORE_REGEXP` か `GH_URL_IGNORE_REGEXP` に一致するものを除いて投稿する
 > - Pushover: Mastodon に投稿したもののうち、タイトルが `GH_TITLE_PUSHOVER_REGEXP` に一致するものだけを送る
 >
-> これとは別に、PR のマージとリリースのイベントは、Feed Subscriber が SQS に送らない。
+> これとは別に、PR のマージとリリースのイベントは投稿しない。
 >
 > スターしたリポジトリと、公開されたリポジトリの投稿には、README から生成した日本語の紹介文を添える。README の取得や紹介文の生成に失敗したら、紹介なしで投稿する。Pushover に送る内容は変えない。
 
