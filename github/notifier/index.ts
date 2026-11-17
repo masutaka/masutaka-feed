@@ -66,6 +66,11 @@ const notify = async (message: QueueMessage): Promise<void> => {
 const processEntry = async (entryId: string, title: string, url: string): Promise<void> => {
   console.info(`Processing entry for GitHub: ${url}`);
 
+  if (isIgnoredEntry(entryId)) {
+    console.info(`Ignoring entry: ${entryId}`);
+    return;
+  }
+
   if (ITEM_TITLE_IGNORE_REGEXP.test(title)) {
     console.info(`Ignoring entry "${title}" (matched ${ITEM_TITLE_IGNORE_REGEXP})`);
     return;
@@ -90,6 +95,11 @@ const processEntry = async (entryId: string, title: string, url: string): Promis
     console.warn('Pushover failed (best effort); ignoring:', error);
   }
 };
+
+// GH_TITLE_IGNORE_REGEXP（タイトル）とは別に <id> でも除外するのは、表示用の文言が変わっても除外できるようにするため。
+// subscriber で除外しないのは、フィードのエントリーをすべて DynamoDB に残すため
+const isIgnoredEntry = (entryId: string): boolean =>
+  /^tag:github\.com,2008:(?:pr_merged|publish_release)\//.test(entryId);
 
 const postToMastodon = async (status: string): Promise<any> => {
   try {
