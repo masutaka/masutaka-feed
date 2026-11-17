@@ -54,6 +54,11 @@ export const handler = async (): Promise<void> => {
         continue;
       }
 
+      if (isIgnoredEntry(entryId)) {
+        console.info(`Ignoring entry: ${entryId}`);
+        continue;
+      }
+
       const isNew = await checkIfNewEntry(entryId, STATE_TABLE_NAME);
 
       if (isNew) {
@@ -69,6 +74,10 @@ export const handler = async (): Promise<void> => {
     throw error;
   }
 };
+
+// GH_TITLE_IGNORE_REGEXP（タイトル）とは別に <id> でも除外するのは、表示用の文言が変わっても除外できるようにするため
+const isIgnoredEntry = (entryId: string): boolean =>
+  /^tag:github\.com,2008:(?:pr_merged|publish_release)\//.test(entryId);
 
 const checkIfNewEntry = async (entryId: string, tableName: string): Promise<boolean> => {
   try {
