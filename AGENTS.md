@@ -38,7 +38,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### Notifier関数
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
-  - スターのイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
+  - スターと公開（made this repository public）のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -67,9 +67,9 @@ Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試
 
 DLQのアラームは、DLQにメッセージが残っている間はALARMのままなので、次にDLQに移ったメッセージは通知されない。通知を受けたら、DLQのメッセージを元のキューに戻すか削除して、DLQを空にする。元のキューに戻したメッセージはキューの末尾に入るため、投稿は古い順にならない。
 
-### スターしたリポジトリの紹介文
+### スター・公開されたリポジトリの紹介文
 
-`GitHubNotifierFunction` は、スターのイベントのときだけ次のように紹介文を作る。
+`GitHubNotifierFunction` は、スターと公開のイベントのときだけ次のように紹介文を作る。
 
 - README は `https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.md` から未認証で取得する。owner/repo はタイトルではなく URL から取り出す
 - README は 16 KiB で読み取りをやめ、資料として区切って渡す。区切りのタグ名には呼び出しごとのランダムな値を入れ、README 側から閉じられないようにする

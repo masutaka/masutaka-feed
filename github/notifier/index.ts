@@ -1,7 +1,7 @@
 import { createRestAPIClient } from 'masto';
 import { Context, SQSEvent } from 'aws-lambda';
 import { sendPushoverMessage } from './pushover';
-import { IntroductionResult, generateIntroduction, isStarEvent, parseRepositoryUrl } from './introduction';
+import { IntroductionResult, generateIntroduction, isIntroductionTarget, parseRepositoryUrl } from './introduction';
 
 // github/subscriber/index.ts の QueueMessage と合わせること
 interface QueueMessage {
@@ -124,11 +124,11 @@ const sendPushover = async (title: string, message: string): Promise<any> => {
   }
 };
 
-// スターのイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
+// スターと公開のイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
 const buildMastodonStatus = async (title: string, url: string, message: string): Promise<string> => {
   const status = `[GH] ${title} ${message}`;
 
-  if (!isStarEvent(title)) {
+  if (!isIntroductionTarget(title)) {
     return status;
   }
 
