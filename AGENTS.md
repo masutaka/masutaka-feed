@@ -38,7 +38,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### Notifier関数
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
-  - スターと公開（made this repository public）のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
+  - スターと公開のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -69,22 +69,13 @@ DLQのアラームは、DLQにメッセージが残っている間はALARMのま
 
 ### スター・公開されたリポジトリの紹介文
 
-`GitHubNotifierFunction` は、スターと公開のイベントのときだけ次のように紹介文を作る。
+`GitHubNotifierFunction` は、次の前提で紹介文を作る。
 
-- README は `https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.md` から未認証で取得する。owner/repo はタイトルではなく URL から取り出す
-- README は 16 KiB で読み取りをやめ、資料として区切って渡す。区切りのタグ名には呼び出しごとのランダムな値を入れ、README 側から閉じられないようにする
 - README は第三者が書けるため、プロンプトインジェクションを前提にする
   - GitHub の表示では見えない指示を手軽に仕込めないよう、HTML コメントは取り除いてから渡す。ただし、表示されない書き方はほかにもある
   - 出力の検証で防げるのは、リンク・メンション・ハッシュタグなどの形式まで。README に書かれた指示にモデルが従えば、誤解を招く文が投稿されることはありうる
 - モデルは `global.anthropic.claude-haiku-4-5-20251001-v1:0`（Global cross-Region inference）。Claude Haiku 5.5 がこのアカウントではまだ使えないための代わりで、使えるようになったら Claude Haiku 5.5 にする（#295）。`template.yaml` の `Mappings` で定義し、IAM では必要な3つの ARN だけを許可する
 - README・Bedrock・Mastodon・Pushover の呼び出しにタイムアウトを設け、Lambda の Timeout（75秒）に収める。Lambda 全体がタイムアウトすると、紹介なしで投稿するフォールバックが働かないため
-- 投稿の形は `[GH] {紹介文} > {タイトル} {URL}`。紹介なしのときは、ほかのイベントと同じ `[GH] {タイトル} {URL}`
-- 次の場合は紹介なしで投稿し、理由をログに出す
-  - `README.md` がない（HTML コメントを除くと空の場合も含む）、README の取得に失敗した、Bedrock の呼び出しに失敗した
-  - 前後の空白を除いた生成文が空・120字を超える・途中で途切れた、またはメンション・Mastodon でリンクになる URL・ハッシュタグ・カスタム絵文字・不等号（`<` `>`）・改行・制御文字を含む
-  - 想定外の例外が出た
-  - 紹介文を足すと Mastodon の500文字制限（URL は23字換算）を超える
-- Pushover への送信内容は変えない
 - 紹介文を作れない状態（Bedrock の失敗など）が続いても、自動では通知しない。趣味の機能で、紹介なしで投稿されるだけのため。最初の紹介付きの投稿は、デプロイ後にログで確かめる
 
 ### 予算アラーム

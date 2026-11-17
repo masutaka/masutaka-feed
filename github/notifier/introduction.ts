@@ -62,10 +62,9 @@ const FORBIDDEN_OUTPUT_REGEXP = new RegExp([
 
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
-// スターと公開のイベントに紹介文を添える
-// 「/」を区切りの前後で取り合わないようにして、長い文字列でも線形時間で判定する
-export const isIntroductionTarget = (title: string): boolean =>
-  /^[^ ]+ starred [^ /]+\/[^ /]+$/.test(title) || /^[^ ]+ made this repository public$/.test(title);
+// タイトルで判断しないのは、表示用の文言が変わりうるため
+export const isIntroductionTarget = (entryId: string): boolean =>
+  /^tag:github\.com,2008:(?:star|visibility_repo)\//.test(entryId);
 
 export const parseRepositoryUrl = (url: string): Repository | undefined => {
   const found = url.match(REPOSITORY_URL_REGEXP);
