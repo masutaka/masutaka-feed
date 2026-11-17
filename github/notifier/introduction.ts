@@ -62,8 +62,7 @@ const FORBIDDEN_OUTPUT_REGEXP = new RegExp([
 
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
-// スターと公開のイベントに紹介文を添える
-// entryId は Atom の <id>（tag:github.com,2008:{イベントの種類}/{番号}）
+// タイトルで判断しないのは、表示用の文言が変わりうるため
 export const isIntroductionTarget = (entryId: string): boolean =>
   /^tag:github\.com,2008:(?:star|visibility_repo)\//.test(entryId);
 
