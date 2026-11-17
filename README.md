@@ -33,7 +33,7 @@ graph TD
     F[Pushover]
 
     A -.->|2: 取得| H
-    D -.->|6: スターのイベントなら<br/>README を取得| R
+    D -.->|6: スター・公開のイベントなら<br/>README を取得| R
     D -.->|7: 紹介文を生成| B
     D -->|8: 絞り込んで投稿| E
     D -->|8: 絞り込んで投稿| F
@@ -45,7 +45,7 @@ graph TD
 > - Mastodon: `GH_TITLE_IGNORE_REGEXP` か `GH_URL_IGNORE_REGEXP` に一致するものを除いて投稿する
 > - Pushover: Mastodon に投稿したもののうち、タイトルが `GH_TITLE_PUSHOVER_REGEXP` に一致するものだけを送る
 >
-> スターしたリポジトリの投稿には、README から生成した日本語の紹介文を添える。README の取得や紹介文の生成に失敗したら、紹介なしで投稿する。Pushover に送る内容は変えない。
+> スターしたリポジトリと、公開されたリポジトリの投稿には、README から生成した日本語の紹介文を添える。README の取得や紹介文の生成に失敗したら、紹介なしで投稿する。Pushover に送る内容は変えない。
 
 ## hatebu/
 

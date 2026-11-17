@@ -1,5 +1,5 @@
 /**
- * スターしたリポジトリの README から、Amazon Bedrock の Claude で日本語の紹介文を作る
+ * スターした・公開されたリポジトリの README から、Amazon Bedrock の Claude で日本語の紹介文を作る
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html
  */
 
@@ -62,8 +62,10 @@ const FORBIDDEN_OUTPUT_REGEXP = new RegExp([
 
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
+// スターと公開のイベントに紹介文を添える
 // 「/」を区切りの前後で取り合わないようにして、長い文字列でも線形時間で判定する
-export const isStarEvent = (title: string): boolean => /^[^ ]+ starred [^ /]+\/[^ /]+$/.test(title);
+export const isIntroductionTarget = (title: string): boolean =>
+  /^[^ ]+ starred [^ /]+\/[^ /]+$/.test(title) || /^[^ ]+ made this repository public$/.test(title);
 
 export const parseRepositoryUrl = (url: string): Repository | undefined => {
   const found = url.match(REPOSITORY_URL_REGEXP);
