@@ -135,7 +135,7 @@ const sendPushover = async (title: string, message: string): Promise<any> => {
   }
 };
 
-// スターと公開のイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
+// star, fork, public のイベントには紹介文を添える。紹介文を作れなければ、紹介なしで投稿する
 const buildMastodonStatus = async (entryId: string, title: string, url: string, message: string): Promise<string> => {
   const status = `[GH] ${title} ${message}`;
 
@@ -162,7 +162,7 @@ const buildMastodonStatus = async (entryId: string, title: string, url: string, 
     return status;
   }
 
-  // GitHub の名前の上限を前提にすると、最大でも約340字で収まる。タイトルはフィード次第なので、確認は残す
+  // GitHub の名前の上限を前提にすると、最大でも約490字（fork のイベント）で収まる。タイトルはフィード次第なので、確認は残す
   const statusWithIntroduction = `[GH] ${result.introduction} > ${title} ${message}`;
   const length = [...statusWithIntroduction.replace(message, 'x'.repeat(MASTODON_URL_LENGTH))].length;
   if (length > MASTODON_MAX_LENGTH) {

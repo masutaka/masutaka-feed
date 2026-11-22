@@ -38,7 +38,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 
 #### Notifier関数
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
-  - スターと公開のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
+  - star, fork, public のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
 
 ### SQSキュー
@@ -67,7 +67,7 @@ Notifier関数のエラーは監視しない。一時的な失敗はSQSの再試
 
 DLQのアラームは、DLQにメッセージが残っている間はALARMのままなので、次にDLQに移ったメッセージは通知されない。通知を受けたら、DLQのメッセージを元のキューに戻すか削除して、DLQを空にする。元のキューに戻したメッセージはキューの末尾に入るため、投稿は古い順にならない。
 
-### スター・公開されたリポジトリの紹介文
+### リポジトリの紹介文（star, fork, public のイベント）
 
 `GitHubNotifierFunction` は、次の前提で紹介文を作る。
 
