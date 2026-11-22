@@ -224,6 +224,11 @@ describe('出力の検証', () => {
     assert.deepEqual(result.statuses, [withIntroduction('紹介文')]);
   });
 
+  it('末尾の「。」は取り除いて使う', async () => {
+    const result = await run(STAR, { bedrock: async () => claudeResponse('紹介文。') });
+    assert.deepEqual(result.statuses, [withIntroduction('紹介文')]);
+  });
+
   it('stop_reason が end_turn でなければ使わない', async () => {
     const result = await run(STAR, { bedrock: async () => claudeResponse('紹介文', 'max_tokens') });
     assertWithoutIntroduction(result, 'invalid-output');
