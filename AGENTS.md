@@ -117,6 +117,14 @@ make deploy
 make deploy-bootstrap
 ```
 
+ローカル環境には SAM CLI をインストールしていない。SAM を使うターゲットは `SAM` 変数で uvx 経由に切り替える：
+
+```bash
+make validate SAM="uvx --from aws-sam-cli sam"
+```
+
+`uvx sam` は使わないこと。PyPI の `sam` は SAM CLI とは無関係のパッケージ（時系列の異常検知）で、SAM CLI のパッケージ名は `aws-sam-cli` のため。
+
 ### bootstrapスタック
 
 `bootstrap.yaml` は、GitHub Actionsのデプロイ用IAMロール（`github-actions`）とOIDCプロバイダーを定義する。
