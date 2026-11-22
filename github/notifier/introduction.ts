@@ -1,5 +1,5 @@
 /**
- * スターした・公開されたリポジトリの README から、Amazon Bedrock の Claude で日本語の紹介文を作る
+ * star, fork, public のイベントのリポジトリの README から、Amazon Bedrock の Claude で日本語の紹介文を作る
  * @see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html
  */
 
@@ -64,7 +64,7 @@ const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMP
 
 // タイトルで判断しないのは、表示用の文言が変わりうるため
 export const isIntroductionTarget = (entryId: string): boolean =>
-  /^tag:github\.com,2008:(?:star|visibility_repo)\//.test(entryId);
+  /^tag:github\.com,2008:(?:star|ForkEvent|visibility_repo)\//.test(entryId);
 
 export const parseRepositoryUrl = (url: string): Repository | undefined => {
   const found = url.match(REPOSITORY_URL_REGEXP);

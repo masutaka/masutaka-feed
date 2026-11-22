@@ -40,7 +40,7 @@ Parameters:
 
 Mappings:
   Bedrock:
-    # GitHubNotifierFunction でスター・公開されたリポジトリの紹介文を作るモデル
+    # GitHubNotifierFunction で star, fork, public のイベントのリポジトリの紹介文を作るモデル
     # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html
     # Claude Haiku 5.5 はこのアカウントではまだ使えない（not available for this account）ため、使えるようになるまで Haiku 4.5 にする
     GitHubNotifier:
