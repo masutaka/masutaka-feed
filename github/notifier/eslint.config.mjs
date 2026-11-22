@@ -104,6 +104,15 @@ export default [
     }
   },
   {
+    files: ["**/*.test.ts"],
+    rules: {
+      // node:test の describe と it が返す Promise は、テストランナーが待つ
+      "@typescript-eslint/no-floating-promises": "off",
+      // describe はテストケースを並べるだけなので、長さで分けない
+      "max-lines-per-function": "off"
+    }
+  },
+  {
     ignores: [
       "build/**",
       "dist/**",

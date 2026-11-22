@@ -38,10 +38,27 @@ jobs:
             hatebu/notifier/package-lock.json
             hatebu/subscriber/package-lock.json
       - run: make setup lint
+  test:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: ".tool-versions"
+          cache: npm
+          cache-dependency-path: github/notifier/package-lock.json
+      - run: make -C github/notifier setup
+      - run: make test
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()
-    needs: [gh_action_lint, codeql, lint]
+    needs: [gh_action_lint, codeql, lint, test]
     uses: masutaka/actions/.github/workflows/pushover.yml@main
     permissions: {}
     secrets:
