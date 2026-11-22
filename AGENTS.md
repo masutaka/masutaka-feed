@@ -98,6 +98,9 @@ make lint
 # ESLintによる自動修正
 make fmt-eslint
 
+# github/notifier のテスト（node:test）
+make test
+
 # これからデプロイされるリソースを表示する
 make list-resources
 

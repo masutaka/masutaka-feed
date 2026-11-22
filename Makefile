@@ -38,6 +38,10 @@ lint-tsc:
 	@$(MAKE) -w -C hatebu/notifier lint-tsc
 	@$(MAKE) -w -C hatebu/subscriber lint-tsc
 
+.PHONY: test
+test:
+	@$(MAKE) -w -C github/notifier test
+
 .PHONY: list-resources
 list-resources:
 	@$(SAM) list resources

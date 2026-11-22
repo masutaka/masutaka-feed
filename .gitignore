@@ -1,4 +1,5 @@
 /.aws-sam
+/github/notifier/build/
 /github/notifier/node_modules/
 /github/subscriber/node_modules/
 /hatebu/notifier/node_modules/
