@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  npm_config_loglevel: http
+
 jobs:
   gh_action_lint:
     uses: masutaka/actions/.github/workflows/gh_action_lint.yml@main
