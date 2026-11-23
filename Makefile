@@ -41,6 +41,7 @@ lint-tsc:
 .PHONY: test
 test:
 	@$(MAKE) -w -C github/notifier test
+	@$(MAKE) -w -C hatebu/notifier test
 
 .PHONY: list-resources
 list-resources:

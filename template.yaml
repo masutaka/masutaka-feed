@@ -40,7 +40,7 @@ Parameters:
 
 Mappings:
   Bedrock:
-    # Notifier の関数で文を作るモデル。GitHubNotifierFunction ではリポジトリの紹介文を作る
+    # Notifier の関数で文を作るモデル。GitHubNotifierFunction ではリポジトリの紹介文を、HatebuNotifierFunction では記事の要約を作る
     # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html
     # Claude Haiku 5.5 はこのアカウントではまだ使えない（not available for this account）ため、使えるようになるまで Haiku 4.5 にする
     Notifier:
@@ -282,6 +282,7 @@ Resources:
           - index.ts
     Properties:
       CodeUri: hatebu/notifier/
+      # Globals の60秒から延ばさないのは、記事の取得と Bedrock の呼び出しに hatebu/notifier/summary.ts でタイムアウトを設けて収めているため
       Events:
         HatebuQueueEvent:
           Type: SQS
@@ -295,6 +296,11 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
+          BEDROCK_MODEL_ID: !Sub
+            - "global.${ModelId}"
+            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
+      Policies:
+        - !Ref BedrockInvokeModelPolicy
 
   # Global cross-Region inference に必要な3つの ARN だけを許可する
   # https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html
@@ -611,7 +617,7 @@ Resources:
               {
                 "type": "metric", "x": 12, "y": 30, "width": 12, "height": 6,
                 "properties": {
-                  "title": "Bedrock / Invocations and Errors Sum / GitHubNotifier",
+                  "title": "Bedrock / Invocations and Errors Sum / Notifiers",
                   "view": "timeSeries",
                   "stacked": false,
                   "region": "${AWS::Region}",
@@ -628,7 +634,7 @@ Resources:
               {
                 "type": "metric", "x": 0, "y": 36, "width": 12, "height": 6,
                 "properties": {
-                  "title": "Bedrock / Tokens Sum / GitHubNotifier",
+                  "title": "Bedrock / Tokens Sum / Notifiers",
                   "view": "timeSeries",
                   "stacked": false,
                   "region": "${AWS::Region}",

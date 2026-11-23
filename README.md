@@ -55,6 +55,7 @@ graph TD
 graph TD
     subgraph "データソース"
         A[/はてブのお気に入りフィード/]
+        W[/ブックマークされた記事/]
     end
 
     subgraph "AWS"
@@ -64,13 +65,19 @@ graph TD
         H -->|4: 新着があれば<br/>送信| Q[[SQS FIFO キュー]]
         Q -->|5: 起動| D[Notifier Lambda]
         Q -.->|失敗が続いたら| X[[デッドレターキュー]]
+        B[Amazon Bedrock<br/>Claude Haiku]
     end
 
     E[Mastodon]
 
     A -.->|2: 取得| H
-    D -->|6: 投稿| E
+    D -.->|6: コメントがなければ<br/>記事を取得| W
+    D -.->|7: 要約を生成| B
+    D -->|8: 投稿| E
 ```
+
+> [!NOTE]
+> コメントのないブックマークの投稿には、記事から生成した日本語の要約を添える。記事の取得や要約の生成に失敗したら、要約なしで投稿する。
 
 ## デプロイ
 
