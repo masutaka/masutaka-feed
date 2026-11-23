@@ -35,6 +35,7 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...typescript.configs.recommended.rules,
+      "no-undef": "off",
       "indent": ["error", 2],
       "quotes": ["error", "single", { "avoidEscape": true }],
       "semi": ["error", "always"],
@@ -93,12 +94,24 @@ export default [
         { "selector": "default", "format": ["camelCase"], "leadingUnderscore": "allow" },
         { "selector": "variable", "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" },
         { "selector": "function", "format": ["camelCase"] },
-        { "selector": "typeLike", "format": ["PascalCase"] }
+        { "selector": "typeLike", "format": ["PascalCase"] },
+        // Content-Type などの HTTP のヘッダー名は、引用符が要る名前のまま書く
+        { "selector": "objectLiteralProperty", "modifiers": ["requiresQuotes"], "format": null }
       ],
       // オブジェクトプロパティの省略記法を強制
       "object-shorthand": ["error", "always"],
       // 関数の引数への再代入を禁止
       "no-param-reassign": ["error", { "props": true }]
+    }
+  },
+  {
+    files: ["**/*.test.ts"],
+    rules: {
+      // node:test の describe と it が返す Promise は、テストランナーが待つ
+      "@typescript-eslint/no-floating-promises": "off",
+      // describe はテストケースを並べるだけなので、長さで分けない
+      "max-lines-per-function": "off",
+      "max-lines": "off"
     }
   },
   {

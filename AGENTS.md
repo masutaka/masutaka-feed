@@ -40,6 +40,7 @@ AWS SAMを使用したサーバーレスアプリケーション。構成図は 
 - `GitHubNotifierFunction`: SQSから起動され、Mastodon/Pushoverへ投稿（タイムアウト: 75秒）
   - star, fork, public のイベントでは、README から Amazon Bedrock の Claude Haiku で紹介文を作り、Mastodon への投稿に添える（`github/notifier/introduction.ts`）
 - `HatebuNotifierFunction`: SQSから起動され、Mastodonへ投稿（タイムアウト: 60秒）
+  - コメントのないブックマークでは、記事の本文から Amazon Bedrock の Claude Haiku で要約を作り、Mastodon への投稿に添える（`hatebu/notifier/summary.ts`）
 
 ### SQSキュー
 
@@ -78,6 +79,16 @@ DLQのアラームは、DLQにメッセージが残っている間はALARMのま
 - README・Bedrock・Mastodon・Pushover の呼び出しにタイムアウトを設け、Lambda の Timeout（75秒）に収める。Lambda 全体がタイムアウトすると、紹介なしで投稿するフォールバックが働かないため
 - 紹介文を作れない状態（Bedrock の失敗など）が続いても、自動では通知しない。趣味の機能で、紹介なしで投稿されるだけのため。最初の紹介付きの投稿は、デプロイ後にログで確かめる
 
+### 記事の要約（コメントのないはてブ）
+
+`HatebuNotifierFunction` は、次の前提で要約を作る。
+
+- 材料は記事の本文。フィードの `content:encoded` の抜粋は使わない。100字ほどで、書き手の自己紹介で終わることが多く、要約の材料にならないため
+- 記事は第三者が書けるため、プロンプトインジェクションを前提にする。出力の検証で防げる範囲は、紹介文と同じ
+- 記事の URL も第三者が選べるため、私的 IP などに向く URL は取得しない（SSRF 対策）
+- 記事・Bedrock・Mastodon の呼び出しにタイムアウトを設け、Lambda の Timeout（60秒）に収める。理由は紹介文と同じ
+- 要約を作れない状態が続いても、自動では通知しない。理由は紹介文と同じ
+
 ### 予算アラーム
 
 `MonthlyCostBudget` は、アカウント全体の月の費用が $10 を超えたとき（実績と予測）に lambda-alarms SNS トピックへ通知する。専用の AWS アカウントのため、アカウント全体を対象にしている。
@@ -98,7 +109,7 @@ make lint
 # ESLintによる自動修正
 make fmt-eslint
 
-# github/notifier のテスト（node:test）
+# github/notifier と hatebu/notifier のテスト（node:test）
 make test
 
 # これからデプロイされるリソースを表示する
@@ -203,7 +214,7 @@ make validate SAM="uvx --from aws-sam-cli sam"
 - `rss-parser`: RSSフィードのパース（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`: DynamoDBアクセス（github/subscriber、hatebu/subscriberで使用）
 - `@aws-sdk/client-sqs`: SQSへのメッセージ送信（github/subscriber、hatebu/subscriberで使用）
-- `@aws-sdk/client-bedrock-runtime`: Amazon Bedrock の呼び出し（github/notifierで使用）
+- `@aws-sdk/client-bedrock-runtime`: Amazon Bedrock の呼び出し（github/notifier、hatebu/notifierで使用）
 
 ### 開発依存関係
 - TypeScript: 型システム

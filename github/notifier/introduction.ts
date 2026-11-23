@@ -45,7 +45,7 @@ const buildSystemPrompt = (tag: string): string => `GitHub リポジトリの紹
 // owner は英数字とハイフン、リポジトリ名は英数字と「.」「_」「-」だけを許す
 const REPOSITORY_URL_REGEXP = /^https:\/\/github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})$/;
 
-// 生成文に含まれていたら紹介なしにする文字列。いずれも Mastodon v4.7.5 の判定に合わせている
+// 生成文に含まれていたら紹介なしにする文字列。いずれも Mastodon v4.7.5 の判定に合わせている。hatebu/notifier/summary.ts と合わせること
 // - リンクになる URL（config/initializers/twitter_regex.rb）
 //   https://github.com/mastodon/mastodon/blob/v4.7.5/config/initializers/twitter_regex.rb#L45
 // - メンション・ハッシュタグになる文字

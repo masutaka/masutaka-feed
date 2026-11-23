@@ -52,8 +52,11 @@ jobs:
         with:
           node-version-file: ".tool-versions"
           cache: npm
-          cache-dependency-path: github/notifier/package-lock.json
+          cache-dependency-path: |
+            github/notifier/package-lock.json
+            hatebu/notifier/package-lock.json
       - run: make -C github/notifier setup
+      - run: make -C hatebu/notifier setup
       - run: make test
   pushover:
     name: pushover if failure
