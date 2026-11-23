@@ -271,6 +271,12 @@ describe('取得してはいけない URL は、要約なしで投稿する', ()
     assertWithoutSummary(result, 'unsafe-url', entry);
   });
 
+  it('IPv6 の IP アドレスで書かれた私的 IP', async () => {
+    const entry = entryOf({ entryUrl: `http://[::1]:${port}/article` });
+    const result = await run(entry, { allowedAddresses: [] });
+    assertWithoutSummary(result, 'unsafe-url', entry);
+  });
+
   it('リダイレクト先が私的 IP', async () => {
     articleHandler = (_request, response) => {
       response.writeHead(302, { location: `http://127.0.0.2:${port}/` });
@@ -342,6 +348,18 @@ describe('Mastodon の文字数', () => {
     const result = await run(entry, { bedrock: async () => claudeResponse(summary) });
     assert.deepEqual(result.statuses, [withoutSummary(entry)]);
     assert.ok(result.warnings.some((warning) => warning.includes('(too long: 501 characters)')));
+  });
+});
+
+describe('記事の取得のタイムアウト', () => {
+  it('本文の受信が止まっても、中断して例外になる', { timeout: 5_000 }, async () => {
+    const { fetchArticleText } = await import('./article.js');
+    allowAddresses(['127.0.0.1', '::1']);
+    articleHandler = (_request, response) => {
+      response.writeHead(200, { 'Content-Type': 'text/html' });
+      response.flushHeaders();
+    };
+    await assert.rejects(fetchArticleText(articleUrl(), AbortSignal.timeout(100)));
   });
 });
 
