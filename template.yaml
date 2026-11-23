@@ -40,10 +40,10 @@ Parameters:
 
 Mappings:
   Bedrock:
-    # GitHubNotifierFunction で star, fork, public のイベントのリポジトリの紹介文を作るモデル
+    # Notifier の関数で文を作るモデル。GitHubNotifierFunction ではリポジトリの紹介文を作る
     # https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html
     # Claude Haiku 5.5 はこのアカウントではまだ使えない（not available for this account）ため、使えるようになるまで Haiku 4.5 にする
-    GitHubNotifier:
+    Notifier:
       ModelId: anthropic.claude-haiku-4-5-20251001-v1:0
 
 # More info about Globals: https://github.com/aws/serverless-application-model/blob/master/docs/globals.rst
@@ -267,44 +267,9 @@ Resources:
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
           BEDROCK_MODEL_ID: !Sub
             - "global.${ModelId}"
-            - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
-      # Global cross-Region inference に必要な3つの ARN だけを許可する
-      # https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html
+            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
       Policies:
-        - Statement:
-            - Sid: GrantGlobalCrisInferenceProfileRegionAccess
-              Effect: Allow
-              Action: bedrock:InvokeModel
-              Resource: !Sub
-                - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
-                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
-              Condition:
-                StringEquals:
-                  aws:RequestedRegion: !Ref AWS::Region
-            - Sid: GrantGlobalCrisInferenceProfileInRegionModelAccess
-              Effect: Allow
-              Action: bedrock:InvokeModel
-              Resource: !Sub
-                - "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"
-                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
-              Condition:
-                StringEquals:
-                  aws:RequestedRegion: !Ref AWS::Region
-                  bedrock:InferenceProfileArn: !Sub
-                    - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
-                    - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
-            - Sid: GrantGlobalCrisInferenceProfileGlobalModelAccess
-              Effect: Allow
-              Action: bedrock:InvokeModel
-              Resource: !Sub
-                - "arn:${AWS::Partition}:bedrock:::foundation-model/${ModelId}"
-                - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
-              Condition:
-                StringEquals:
-                  aws:RequestedRegion: unspecified
-                  bedrock:InferenceProfileArn: !Sub
-                    - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
-                    - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+        - !Ref BedrockInvokeModelPolicy
   HatebuNotifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -330,6 +295,49 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
+
+  # Global cross-Region inference に必要な3つの ARN だけを許可する
+  # https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html
+  BedrockInvokeModelPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Allows Notifier functions to invoke the Bedrock model via Global cross-Region inference
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: GrantGlobalCrisInferenceProfileRegionAccess
+            Effect: Allow
+            Action: bedrock:InvokeModel
+            Resource: !Sub
+              - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+              - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: !Ref AWS::Region
+          - Sid: GrantGlobalCrisInferenceProfileInRegionModelAccess
+            Effect: Allow
+            Action: bedrock:InvokeModel
+            Resource: !Sub
+              - "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${ModelId}"
+              - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: !Ref AWS::Region
+                bedrock:InferenceProfileArn: !Sub
+                  - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+                  - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
+          - Sid: GrantGlobalCrisInferenceProfileGlobalModelAccess
+            Effect: Allow
+            Action: bedrock:InvokeModel
+            Resource: !Sub
+              - "arn:${AWS::Partition}:bedrock:::foundation-model/${ModelId}"
+              - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: unspecified
+                bedrock:InferenceProfileArn: !Sub
+                  - "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/global.${ModelId}"
+                  - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
 
   # CloudWatch Logs Log Groups
   GitHubFeedSubscriberLogGroup:
@@ -634,7 +642,7 @@ Resources:
               }
             ]
           }
-        - ModelId: !FindInMap [Bedrock, GitHubNotifier, ModelId]
+        - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
 
   # SNS Topic for Lambda Alarms
   # Note: SNS Subscription (email) is manually configured via AWS Console
