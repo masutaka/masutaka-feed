@@ -24,6 +24,7 @@ before(async () => {
 
 afterEach(() => {
   mock.restoreAll();
+  delete process.env.BEDROCK_ENABLED;
 });
 
 interface Entry {
@@ -134,6 +135,23 @@ describe('イベントの種類', () => {
       assert.deepEqual(result.statuses, []);
     });
   }
+});
+
+describe('Bedrock を止めたとき', () => {
+  it('BEDROCK_ENABLED が false なら紹介文を添えず、README も取得しない', async () => {
+    process.env.BEDROCK_ENABLED = 'false';
+    const readme = mock.fn(async () => new Response('# README'));
+    const result = await run(STAR, { readme });
+    assertWithoutIntroduction(result, 'bedrock-disabled');
+    assert.equal(readme.mock.callCount(), 0);
+    assert.deepEqual(result.readmes, []);
+  });
+
+  it('BEDROCK_ENABLED が true なら紹介文を添える', async () => {
+    process.env.BEDROCK_ENABLED = 'true';
+    const result = await run(STAR);
+    assert.deepEqual(result.statuses, [withIntroduction('紹介文')]);
+  });
 });
 
 describe('HTML コメントの除去', () => {

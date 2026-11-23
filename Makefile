@@ -47,7 +47,7 @@ test:
 list-resources:
 	@$(SAM) list resources
 
-REQUIRED_ENVS := GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_URL_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
+REQUIRED_ENVS := BEDROCK_ENABLED GH_FEED_URL GH_TITLE_IGNORE_REGEXP GH_URL_IGNORE_REGEXP GH_TITLE_PUSHOVER_REGEXP \
                  HATEBU_FEED_URL PUSHOVER_APP_TOKEN PUSHOVER_USER_KEY \
                  MASTODON_URL MASTODON_ACCESS_TOKEN
 
@@ -84,6 +84,7 @@ DEPLOY_OPTIONS := $(if $(CI),--no-confirm-changeset,)
 .PHONY: deploy
 deploy: validate-envs .aws-sam/build/template.yaml
 	@$(SAM) deploy $(DEPLOY_OPTIONS) --no-fail-on-empty-changeset --parameter-overrides \
+		BedrockEnabled="$$BEDROCK_ENABLED" \
 		GitHubFeedUrl="$$GH_FEED_URL" \
 		GithubTitleIgnoreRegexp="$$GH_TITLE_IGNORE_REGEXP" \
 		GithubUrlIgnoreRegexp="$$GH_URL_IGNORE_REGEXP" \
