@@ -6,7 +6,7 @@ export type SummaryResult =
   | { ok: true; summary: string; }
   | {
     ok: false;
-    reason: 'unsafe-url' | 'article-fetch-failed' | 'no-article' | 'bedrock-failed' | 'invalid-output';
+    reason: 'bedrock-disabled' | 'unsafe-url' | 'article-fetch-failed' | 'no-article' | 'bedrock-failed' | 'invalid-output';
     detail: unknown;
   };
 
@@ -58,6 +58,11 @@ const FORBIDDEN_OUTPUT_REGEXP = new RegExp([
 const bedrockClient = new BedrockRuntimeClient({ maxAttempts: BEDROCK_MAX_ATTEMPTS });
 
 export const generateSummary = async (url: string, title: string): Promise<SummaryResult> => {
+  // ほかの環境変数と違って呼び出しのたびに読むのは、テストで切り替えるため
+  if (process.env.BEDROCK_ENABLED === 'false') {
+    return { ok: false, reason: 'bedrock-disabled', detail: url };
+  }
+
   let article: string | undefined;
   try {
     article = await fetchArticleText(url, AbortSignal.timeout(ARTICLE_TIMEOUT_MS));

@@ -13,7 +13,11 @@ export interface Repository {
 
 export type IntroductionResult =
   | { ok: true; introduction: string; }
-  | { ok: false; reason: 'no-readme' | 'readme-fetch-failed' | 'bedrock-failed' | 'invalid-output'; detail: unknown; };
+  | {
+    ok: false;
+    reason: 'bedrock-disabled' | 'no-readme' | 'readme-fetch-failed' | 'bedrock-failed' | 'invalid-output';
+    detail: unknown;
+  };
 
 // IAM ポリシーと同じモデルにするため、template.yaml の Mappings から渡す
 const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID!;
@@ -76,6 +80,11 @@ export const parseRepositoryUrl = (url: string): Repository | undefined => {
 };
 
 export const generateIntroduction = async (repository: Repository): Promise<IntroductionResult> => {
+  // ほかの環境変数と違って呼び出しのたびに読むのは、テストで切り替えるため
+  if (process.env.BEDROCK_ENABLED === 'false') {
+    return { ok: false, reason: 'bedrock-disabled', detail: `${repository.owner}/${repository.name}` };
+  }
+
   let readme: string | undefined;
   try {
     readme = await fetchReadme(repository);

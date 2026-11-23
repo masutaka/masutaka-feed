@@ -39,6 +39,7 @@ afterEach(() => {
   mock.restoreAll();
   // keep-alive の接続が残ると、次のテストで名前解決されず、私的 IP の拒否を確かめられないため
   server.closeAllConnections();
+  delete process.env.BEDROCK_ENABLED;
 });
 
 interface Entry {
@@ -152,6 +153,24 @@ describe('コメントの有無', () => {
   });
 
   it('コメントがなければ、要約を添えて投稿する', async () => {
+    const result = await run(entryOf());
+    assert.deepEqual(result.statuses, [withSummary('要約')]);
+  });
+});
+
+describe('Bedrock を止めたとき', () => {
+  it('BEDROCK_ENABLED が false なら要約を添えず、記事も取得しない', async () => {
+    process.env.BEDROCK_ENABLED = 'false';
+    const article = mock.fn(html('<p>本文</p>'));
+    articleHandler = article;
+    const result = await run(entryOf());
+    assertWithoutSummary(result, 'bedrock-disabled');
+    assert.equal(article.mock.callCount(), 0);
+    assert.deepEqual(result.materials, []);
+  });
+
+  it('BEDROCK_ENABLED が true なら要約を添える', async () => {
+    process.env.BEDROCK_ENABLED = 'true';
     const result = await run(entryOf());
     assert.deepEqual(result.statuses, [withSummary('要約')]);
   });

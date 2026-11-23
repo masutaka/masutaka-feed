@@ -3,6 +3,10 @@ Transform: AWS::Serverless-2016-10-31
 Description: Managed by AWS SAM
 
 Parameters:
+  BedrockEnabled:
+    Type: String
+    Description: "Whether Notifier functions invoke Bedrock"
+    AllowedValues: ["true", "false"]
   GitHubFeedUrl:
     Type: String
     Description: "GitHub feed URL with token"
@@ -258,6 +262,10 @@ Resources:
       Description: GitHub feed notifier Lambda function
       Environment:
         Variables:
+          BEDROCK_ENABLED: !Ref BedrockEnabled
+          BEDROCK_MODEL_ID: !Sub
+            - "global.${ModelId}"
+            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
           ITEM_TITLE_IGNORE_REGEXP: !Ref GithubTitleIgnoreRegexp
           ITEM_URL_IGNORE_REGEXP: !Ref GithubUrlIgnoreRegexp
           ITEM_TITLE_PUSHOVER_REGEXP: !Ref GithubTitlePushoverRegexp
@@ -265,9 +273,6 @@ Resources:
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-          BEDROCK_MODEL_ID: !Sub
-            - "global.${ModelId}"
-            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
       Policies:
         - !Ref BedrockInvokeModelPolicy
   HatebuNotifierFunction:
@@ -292,13 +297,14 @@ Resources:
       Description: Hatebu feed notifier Lambda function
       Environment:
         Variables:
+          BEDROCK_ENABLED: !Ref BedrockEnabled
+          BEDROCK_MODEL_ID: !Sub
+            - "global.${ModelId}"
+            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
           PUSHOVER_APP_TOKEN: !Ref PushoverAppToken
           PUSHOVER_USER_KEY: !Ref PushoverUserKey
           MASTODON_URL: !Ref MastodonUrl
           MASTODON_ACCESS_TOKEN: !Ref MastodonAccessToken
-          BEDROCK_MODEL_ID: !Sub
-            - "global.${ModelId}"
-            - ModelId: !FindInMap [Bedrock, Notifier, ModelId]
       Policies:
         - !Ref BedrockInvokeModelPolicy
 

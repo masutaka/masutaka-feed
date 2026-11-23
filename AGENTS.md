@@ -89,6 +89,13 @@ DLQのアラームは、DLQにメッセージが残っている間はALARMのま
 - 記事・Bedrock・Mastodon の呼び出しにタイムアウトを設け、Lambda の Timeout（60秒）に収める。理由は紹介文と同じ
 - 要約を作れない状態が続いても、自動では通知しない。理由は紹介文と同じ
 
+### Bedrock の停止
+
+GitHub Actions variable の `BEDROCK_ENABLED` は通常 `true` にしておく。Bedrock を止めたいとき（料金が予想外に上がったときなど）は `false` にして、Deploy ワークフローを手動で実行する。両方の Notifier が Bedrock を呼ばず、README や記事も取得せずに、紹介文・要約なしで投稿する。
+
+- 変数を変えただけでは反映されない。デプロイで Lambda の環境変数に渡すため
+- 未設定や、`true` と `false` 以外の値は、デプロイでエラーになる
+
 ### 予算アラーム
 
 `MonthlyCostBudget` は、アカウント全体の月の費用が $10 を超えたとき（実績と予測）に lambda-alarms SNS トピックへ通知する。専用の AWS アカウントのため、アカウント全体を対象にしている。
@@ -206,6 +213,9 @@ make validate SAM="uvx --from aws-sam-cli sam"
 - `PUSHOVER_USER_KEY`: Pushover APIのユーザーキー
 - `MASTODON_URL`: MastodonインスタンスのURL
 - `MASTODON_ACCESS_TOKEN`: Mastodon APIのアクセストークン
+
+#### Bedrock関連
+- `BEDROCK_ENABLED`: `true` なら Bedrock を呼び、`false` なら呼ばない
 
 ## 依存関係
 

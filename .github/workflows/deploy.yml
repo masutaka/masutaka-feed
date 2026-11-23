@@ -66,6 +66,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws-secret-access-key }}
           AWS_SESSION_TOKEN: ${{ steps.aws-credentials.outputs.aws-session-token }}
+          BEDROCK_ENABLED: ${{ vars.BEDROCK_ENABLED }}
           GH_FEED_URL: ${{ secrets.GH_FEED_URL }}
           GH_TITLE_IGNORE_REGEXP: ${{ secrets.GH_TITLE_IGNORE_REGEXP }}
           GH_URL_IGNORE_REGEXP: ${{ secrets.GH_URL_IGNORE_REGEXP }}
