@@ -54,10 +54,10 @@ jobs:
           cache: npm
           cache-dependency-path: |
             github/notifier/package-lock.json
+            github/subscriber/package-lock.json
             hatebu/notifier/package-lock.json
-      - run: make -C github/notifier setup
-      - run: make -C hatebu/notifier setup
-      - run: make test
+            hatebu/subscriber/package-lock.json
+      - run: make setup test
   pushover:
     name: pushover if failure
     if: github.ref_name == github.event.repository.default_branch && failure()
