@@ -187,6 +187,10 @@ describe('記事の本文', () => {
     assert.equal(bodyOf(await materialOf('<p>&lt;a&gt; &amp; &quot;b&quot; &#39;c&#39; &#x3042;&nbsp;d</p>')), '<a> & "b" \'c\' あ d');
   });
 
+  it('--!> で閉じたコメントも取り除く', async () => {
+    assert.equal(bodyOf(await materialOf('<p>あ</p><!-- x --!><p>い</p>')), 'あ い');
+  });
+
   it('閉じのない要素は、そこから後ろを捨てる', async () => {
     assert.equal(bodyOf(await materialOf('<p>本文</p><script>x')), '本文');
   });

@@ -153,7 +153,7 @@ const decode = (bytes: Buffer, contentType: string): string => {
 
 // Readability などで本文だけを取り出さないのは、依存を増やさないため。残るノイズは要約に任せる
 const extractText = (html: string): string => {
-  let text = removeSpans(html, '<!--', '-->');
+  let text = removeSpans(html, '<!--', '--!?>');
   for (const tagName of NON_CONTENT_ELEMENTS) {
     text = removeSpans(text, `<${tagName}\\b`, `</${tagName}\\s*>`);
   }
