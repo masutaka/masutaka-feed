@@ -461,7 +461,7 @@ Resources:
       DashboardBody: !Sub
         - |
           {
-            "start": "-P3M",
+            "start": "-P7D",
             "periodOverride": "auto",
             "widgets": [
               {
