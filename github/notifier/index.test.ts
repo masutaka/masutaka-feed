@@ -99,7 +99,7 @@ const run = async (entry: Entry, fakes: Partial<Fakes> = {}): Promise<Result> =>
 };
 
 const withIntroduction = (introduction: string, entry = STAR): string =>
-  `[GH] ${introduction} > ${entry.entryTitle} ${entry.entryUrl}`;
+  `[GH] ✨ ${introduction} > ${entry.entryTitle} ${entry.entryUrl}`;
 
 const withoutIntroduction = (entry = STAR): string =>
   `[GH] ${entry.entryTitle} ${entry.entryUrl}`;
@@ -254,7 +254,7 @@ describe('出力の検証', () => {
 });
 
 describe('Mastodon の文字数', () => {
-  // 「[GH] 」「 > 」「 」と URL の23字を合わせて32字
+  // 「[GH] ✨ 」「 > 」「 」と URL の23字を合わせて34字
   const introduction = 'あ'.repeat(120);
   const entryOf = (titleLength: number): Entry => ({
     ...STAR,
@@ -264,13 +264,13 @@ describe('Mastodon の文字数', () => {
   });
 
   it('500字ちょうどなら紹介文を添える', async () => {
-    const entry = entryOf(500 - 32 - 120);
+    const entry = entryOf(500 - 34 - 120);
     const result = await run(entry, { bedrock: async () => claudeResponse(introduction) });
     assert.deepEqual(result.statuses, [withIntroduction(introduction, entry)]);
   });
 
   it('501字なら紹介なしで投稿する', async () => {
-    const entry = entryOf(501 - 32 - 120);
+    const entry = entryOf(501 - 34 - 120);
     const result = await run(entry, { bedrock: async () => claudeResponse(introduction) });
     assert.deepEqual(result.statuses, [withoutIntroduction(entry)]);
     assert.ok(result.warnings.some((warning) => warning.includes('(too long: 501 characters)')));
