@@ -96,7 +96,7 @@ const buildStatus = async (author: string, comment: string, title: string, url: 
   }
 
   // 長さを確かめずに添えないのは、タイトルの長さがフィード次第のため
-  const statusWithSummary = `[B!] ${result.summary} > id:${author} ${title} ${url}`.replace(/ +/g, ' ');
+  const statusWithSummary = `[B!] ✨ ${result.summary} > id:${author} ${title} ${url}`.replace(/ +/g, ' ');
   const length = [...statusWithSummary.replace(url, 'x'.repeat(MASTODON_URL_LENGTH))].length;
   if (length > MASTODON_MAX_LENGTH) {
     console.warn(`Posting without summary (too long: ${length} characters):`, result.summary);

@@ -163,7 +163,7 @@ const buildMastodonStatus = async (entryId: string, title: string, url: string, 
   }
 
   // GitHub の名前の上限を前提にすると、最大でも約490字（fork のイベント）で収まる。タイトルはフィード次第なので、確認は残す
-  const statusWithIntroduction = `[GH] ${result.introduction} > ${title} ${message}`;
+  const statusWithIntroduction = `[GH] ✨ ${result.introduction} > ${title} ${message}`;
   const length = [...statusWithIntroduction.replace(message, 'x'.repeat(MASTODON_URL_LENGTH))].length;
   if (length > MASTODON_MAX_LENGTH) {
     console.warn(`Posting without introduction (too long: ${length} characters):`, result.introduction);
