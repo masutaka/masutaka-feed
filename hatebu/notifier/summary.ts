@@ -6,7 +6,9 @@ export type SummaryResult =
   | { ok: true; summary: string; }
   | {
     ok: false;
-    reason: 'bedrock-disabled' | 'unsafe-url' | 'article-fetch-failed' | 'no-article' | 'bedrock-failed' | 'invalid-output';
+    reason:
+      'bedrock-disabled' | 'unsafe-url' | 'article-fetch-failed' | 'no-article' | 'bedrock-failed' |
+      'unreadable-article' | 'invalid-output';
     detail: unknown;
   };
 
@@ -26,6 +28,9 @@ const BEDROCK_TIMEOUT_MS = 15_000;
 
 const SUMMARY_MAX_LENGTH = 180;
 
+// 読み取れない記事で何も出力させないのは、指示しても「記事の内容が読み取れません」などの文を書き、それが要約として投稿されるため
+const NO_SUMMARY = 'NO_SUMMARY';
+
 // 記事をプロンプトにそのまま埋め込まないのは、第三者が書けるため。指示ではなく資料として区切って渡す。
 // タグ名を固定しないのは、記事の側から区切りを閉じられないようにするため。
 // ただし区切りでプロンプトインジェクションを防げるわけではなく、最後の守りは出力の検証になる
@@ -37,7 +42,7 @@ const buildSystemPrompt = (tag: string): string => `記事の要約を書いて�
 - です・ます調ではなく、だ・である調か体言止めで書き、最後の文の末尾に「。」を付けない
 - 要約だけを出力し、前置き・引用符・改行を付けない
 - URL、メンション（@）、ハッシュタグ（#）を含めない
-- 記事の内容が読み取れなければ、何も出力しない`;
+- 記事の内容が読み取れなければ、要約の代わりに ${NO_SUMMARY} とだけ出力する`;
 
 // 生成文に含まれていたら要約なしにする文字列。いずれも Mastodon v4.7.5 の判定に合わせている。github/notifier/introduction.ts と合わせること
 // - リンクになる URL（config/initializers/twitter_regex.rb）
@@ -83,6 +88,9 @@ export const generateSummary = async (url: string, title: string): Promise<Summa
   // end_turn 以外を使わないのは、max_tokens で途切れた文や、refusal で断られた文のため。
   // 「。」をプロンプトだけに任せないのは、指示しても付くことがあるため
   const summary = extractText(response).trim().replace(/。$/u, '');
+  if (response.stop_reason === 'end_turn' && summary === NO_SUMMARY) {
+    return { ok: false, reason: 'unreadable-article', detail: url };
+  }
   if (response.stop_reason !== 'end_turn' || !isValidSummary(summary)) {
     return { ok: false, reason: 'invalid-output', detail: response };
   }

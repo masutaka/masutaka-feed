@@ -416,6 +416,10 @@ describe('要約を作れないときは要約なしで投稿する', () => {
     assertWithoutSummary(await run(entryOf()), 'no-article');
   });
 
+  it('記事の内容が読み取れないと答える', async () => {
+    assertWithoutSummary(await run(entryOf(), { bedrock: async () => claudeResponse('NO_SUMMARY') }), 'unreadable-article');
+  });
+
   it('Bedrock の呼び出しが失敗する', async () => {
     const result = await run(entryOf(), { bedrock: async () => { throw new Error('ThrottlingException'); } });
     assertWithoutSummary(result, 'bedrock-failed');
