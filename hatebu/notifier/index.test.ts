@@ -321,7 +321,7 @@ describe('出力の検証', () => {
     'a>b の記事',
     'a\nb の記事',
     '',
-    'あ'.repeat(181),
+    'あ'.repeat(251),
   ];
   for (const text of rejected) {
     it(`${JSON.stringify(text.length > 100 ? `${text.length}字の文` : text)} は使わない`, async () => {
@@ -330,8 +330,8 @@ describe('出力の検証', () => {
     });
   }
 
-  it('180字までは使う', async () => {
-    const summary = 'あ'.repeat(180);
+  it('250字までは使う', async () => {
+    const summary = 'あ'.repeat(250);
     const result = await run(entryOf(), { bedrock: async () => claudeResponse(summary) });
     assert.deepEqual(result.statuses, [withSummary(summary)]);
   });
@@ -349,7 +349,7 @@ describe('出力の検証', () => {
 
 describe('Mastodon の文字数', () => {
   // 「[B!] ✨ 」「 > 」「id:someone 」「 」と URL の23字を合わせて45字
-  const summary = 'あ'.repeat(180);
+  const summary = 'あ'.repeat(250);
   const entryWithTitle = (titleLength: number): Entry => entryOf({
     entryTitle: 't'.repeat(titleLength),
     // 23字より長い URL でも23字と数えることを確かめる
@@ -357,13 +357,13 @@ describe('Mastodon の文字数', () => {
   });
 
   it('500字ちょうどなら要約を添える', async () => {
-    const entry = entryWithTitle(500 - 45 - 180);
+    const entry = entryWithTitle(500 - 45 - 250);
     const result = await run(entry, { bedrock: async () => claudeResponse(summary) });
     assert.deepEqual(result.statuses, [withSummary(summary, entry)]);
   });
 
   it('501字なら要約なしで投稿する', async () => {
-    const entry = entryWithTitle(501 - 45 - 180);
+    const entry = entryWithTitle(501 - 45 - 250);
     const result = await run(entry, { bedrock: async () => claudeResponse(summary) });
     assert.deepEqual(result.statuses, [withoutSummary(entry)]);
     assert.ok(result.warnings.some((warning) => warning.includes('(too long: 501 characters)')));
