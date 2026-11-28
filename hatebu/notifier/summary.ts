@@ -26,7 +26,8 @@ const BEDROCK_MAX_ATTEMPTS = 2;
 const ARTICLE_TIMEOUT_MS = 10_000;
 const BEDROCK_TIMEOUT_MS = 15_000;
 
-const SUMMARY_MAX_LENGTH = 180;
+// プロンプトの120字に合わせないのは、指示しても超えることが多く、超えた要約も投稿するため
+const SUMMARY_MAX_LENGTH = 250;
 
 // 読み取れない記事で何も出力させないのは、指示しても「記事の内容が読み取れません」などの文を書き、それが要約として投稿されるため
 const NO_SUMMARY = 'NO_SUMMARY';
