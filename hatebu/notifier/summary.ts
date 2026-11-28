@@ -7,8 +7,8 @@ export type SummaryResult =
   | {
     ok: false;
     reason:
-      'bedrock-disabled' | 'unsafe-url' | 'article-fetch-failed' | 'no-article' | 'bedrock-failed' |
-      'unreadable-article' | 'invalid-output';
+      'article-fetch-failed' | 'bedrock-disabled' | 'bedrock-failed' | 'invalid-output' |
+      'no-article' | 'unreadable-article' | 'unsafe-url';
     detail: unknown;
   };
 
